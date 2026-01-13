@@ -1,15 +1,7 @@
 {
   "routes": [
     {
-      "src": "^/(publics/.*)",
-      "dest": "/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/views/index.html"
-    },
-    {
-      "src": "/(.*)",
+      "src": "^/$",
       "dest": "/views/index.html"
     }
   ]

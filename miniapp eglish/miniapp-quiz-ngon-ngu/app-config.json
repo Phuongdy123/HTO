@@ -1,0 +1,17 @@
+{
+  "appId": "2090846515782636934",
+  "app": {
+    "title": "Quiz thi thử ngôn ngữ",
+    "textColor": {
+      "light": "black",
+      "dark": "white"
+    },
+    "statusBar": "transparent",
+    "actionBarHidden": true,
+    "hideIOSSafeAreaBottom": true,
+    "hideAndroidBottomNavigationBar": false
+  },
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": []
+}

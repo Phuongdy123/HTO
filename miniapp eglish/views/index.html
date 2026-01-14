@@ -1,20 +1,32 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="vi" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Study Abroad Quiz Campaign</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/_sdk/element_sdk.js"></script>
     <script src="/_sdk/data_sdk.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/publics/style.css">
-    <style>@view-transition { navigation: auto; }</style>
-</head>
-<body class="h-full overflow-auto">
-    <div id="app-wrapper" class="relative w-full min-h-full overflow-hidden bg-glossy">
+    <style>
+        @view-transition { navigation: auto; }
         
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        /* CSS vùng an toàn cho iPhone */
+        .pb-safe {
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+        
+        /* Ẩn thanh cuộn để thẩm mỹ hơn */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-full overflow-hidden text-gray-800">
+    
+    <div id="app-wrapper" class="relative w-full h-[100dvh] bg-glossy flex flex-col">
+        
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
             <div class="absolute top-20 left-10 float opacity-20">
                 <svg width="60" height="60" viewBox="0 0 64 64" fill="none"><path d="M12 16C12 13.7909 13.7909 12 16 12H32V52H16C13.7909 52 12 50.2091 12 48V16Z" fill="white" /> <path d="M32 12H48C50.2091 12 52 13.7909 52 16V48C52 50.2091 50.2091 52 48 52H32V12Z" fill="white" opacity="0.7" /></svg>
             </div>
@@ -29,180 +41,180 @@
             </div>
         </div>
 
-        <div id="main-content" class="relative z-10 flex items-center justify-center min-h-full p-4 py-8">
+        <div id="main-content" class="relative z-10 flex-grow w-full p-4 overflow-x-hidden overflow-y-auto pb-safe no-scrollbar">
             
-            <div id="screen-welcome" class="w-full max-w-md fade-in">
-                <div class="mb-8 text-center">
-                <div class="inline-block mb-4">
-  <img 
-    src="https://htogroup.com.vn/wp-content/uploads/2025/07/Logo-HTO-GROUP.png"
-    alt="HTO Group"
-    class="object-contain w-20 h-20 p-2 bg-white shadow-lg"
-  />
-</div>
+            <div class="flex flex-col items-center justify-center min-h-full py-6">
 
-                    <h1 id="quiz-title-display" class="text-4xl text-white md:text-5xl mb- drop-shadow-lg">Quiz Trắc Nghiệm Trình Độ Tiếng Anh</h1>
-                    <p id="quiz-subtitle-display" class="mb-8 text-lg font-medium text-blue-100 md:text-xl">Thi thử trình độ ngôn ngữ của bạn để có cơ hội nhận quà từ HTO Gruop</p>
-                    <div class="p-6 mb-8 bg-white/10 backdrop-blur-sm rounded-3xl">
-                        <div class="grid grid-cols-3 gap-4 text-white">
-                            <div><div class="mb-2 text-3xl">🎓</div><div class="text-sm font-semibold">Học Tập</div></div>
-                            <div><div class="mb-2 text-3xl">🌍</div><div class="text-sm font-semibold">Khám Phá</div></div>
-                            <div><div class="mb-2 text-3xl">🎁</div><div class="text-sm font-semibold">Phần Thưởng</div></div>
-                        </div>
-                    </div>
-                    <button id="start-btn" class="w-full py-5 text-xl font-bold text-blue-900 transition-all duration-300 bg-white shadow-2xl rounded-2xl hover:scale-105 active:scale-95 pulse-glow"> <span id="start-button-text">START 🚀</span> </button>
-                </div>
-            </div>
-
-        <div id="screen-form" class="hidden w-full max-w-md">
-    <div class="p-6 bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
-        <div class="mb-6 text-center">
-            <div class="inline-block mb-4">
-                <svg width="60" height="60" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="20" r="8" fill="#3b82f6" /> <path d="M16 44C16 36 23 32 32 32C41 32 48 36 48 44V48H16V44Z" fill="#3b82f6" /></svg>
-            </div>
-            <h2 class="mb-2 text-2xl font-bold text-gray-800">Thông tin của bạn</h2>
-            <p class="text-gray-600">Điền thông tin để bắt đầu</p>
-        </div>
-        <form id="info-form" class="space-y-4">
-            <div>
-                <label for="full-name" class="block mb-2 text-sm font-semibold text-gray-700">Họ và Tên *</label> 
-                <input type="text" id="full-name" required class="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="Nhập họ tên...">
-            </div>
-            <div>
-                <label for="school-name" class="block mb-2 text-sm font-semibold text-gray-700">Tên Trường *</label> 
-                <input type="text" id="school-name" required class="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none" placeholder="Nhập tên trường...">
-            </div>
-            <div class="p-4 bg-blue-50 rounded-xl">
-                <label class="flex items-start gap-3 cursor-pointer"> 
-                    <input type="checkbox" id="phone-consent" required class="w-5 h-5 mt-1 text-blue-600 rounded"> 
-                    <span id="consent-text-display" class="text-sm leading-relaxed text-gray-700"> Tôi đồng ý cung cấp số điện thoại để được tư vấn. </span> 
-                </label>
-            </div>
-            <button type="submit" id="submit-form-btn" class="w-full py-4 text-lg font-bold text-white transition-all duration-300 shadow-xl rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:scale-105 active:scale-95"> Tiếp tục ➡️ </button>
-        </form>
-    </div>
-</div>
-
-            <div id="screen-language" class="hidden w-full max-w-md">
-                <div class="p-6 bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
+                <div id="screen-welcome" class="w-full max-w-md fade-in">
                     <div class="mb-6 text-center">
                         <div class="inline-block mb-4">
-                            <span class="text-5xl">🗣️</span>
+                            <img src="https://htogroup.com.vn/wp-content/uploads/2025/07/Logo-HTO-GROUP.png" alt="HTO Group" class="object-contain w-20 h-20 p-2 bg-white shadow-lg rounded-xl" />
                         </div>
-                        <h2 class="mb-2 text-2xl font-bold text-gray-800">Chọn ngôn ngữ thi thử</h2>
-                        <p class="text-gray-600">Bạn muốn kiểm tra trình độ ngôn ngữ nào?</p>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 gap-3 mb-6" id="language-options">
-                        <button class="flex items-center w-full gap-3 p-4 transition-all border-2 border-gray-200 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="en">
-                            <span class="text-2xl">🇬🇧</span>
-                            <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Anh</span>
-                        </button>
-                        <button class="flex items-center w-full gap-3 p-4 transition-all border-2 border-gray-200 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="zh">
-                            <span class="text-2xl">🇨🇳</span>
-                            <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Trung</span>
-                        </button>
-                        <button class="flex items-center w-full gap-3 p-4 transition-all border-2 border-gray-200 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="kr">
-                            <span class="text-2xl">🇰🇷</span>
-                            <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Hàn</span>
-                        </button>
-                        <button class="flex items-center w-full gap-3 p-4 transition-all border-2 border-gray-200 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="de">
-                            <span class="text-2xl">🇩🇪</span>
-                            <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Đức</span>
-                        </button>
-                        <button class="flex items-center w-full gap-3 p-4 transition-all border-2 border-gray-200 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="jp">
-                            <span class="text-2xl">🇯🇵</span>
-                            <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Nhật</span>
+
+                        <h1 id="quiz-title-display" class="mb-3 text-3xl font-bold leading-tight text-white md:text-5xl drop-shadow-lg">Quiz Trắc Nghiệm Tiếng Anh</h1>
+                        <p id="quiz-subtitle-display" class="mb-6 text-base font-medium text-blue-100 md:text-xl">Thi thử trình độ ngôn ngữ của bạn để có cơ hội nhận quà từ HTO Group</p>
+                        
+                        <div class="p-5 mb-6 border bg-white/10 backdrop-blur-sm rounded-3xl border-white/20">
+                            <div class="grid grid-cols-3 gap-3 text-white">
+                                <div><div class="mb-1 text-2xl">🎓</div><div class="text-xs font-semibold">Học Tập</div></div>
+                                <div><div class="mb-1 text-2xl">🌍</div><div class="text-xs font-semibold">Khám Phá</div></div>
+                                <div><div class="mb-1 text-2xl">🎁</div><div class="text-xs font-semibold">Phần Thưởng</div></div>
+                            </div>
+                        </div>
+                        <button id="start-btn" class="w-full py-4 text-xl font-bold text-blue-900 transition-all duration-300 bg-white shadow-2xl rounded-2xl hover:scale-105 active:scale-95 pulse-glow"> 
+                            <span id="start-button-text">BẮT ĐẦU 🚀</span> 
                         </button>
                     </div>
                 </div>
-            </div>
-          <div id="screen-quiz" class="hidden w-full max-w-2xl">
-    <div class="mb-3"> 
-        <div class="flex items-center justify-between mb-1 text-white">
-            <span class="text-xs font-semibold">Câu <span id="current-q">1</span>/20</span> 
-            <span class="text-xs font-semibold">Điểm: <span id="score-display">0</span></span>
-        </div>
-        <div class="w-full h-2 overflow-hidden rounded-full bg-white/30 backdrop-blur-sm">
-            <div id="progress-bar" class="h-full transition-all duration-500 rounded-full bg-gradient-to-r from-green-400 to-blue-500" style="width: 20%;"></div>
-        </div>
-    </div>
 
-    <div class="p-4 mb-4 bg-white shadow-2xl rounded-2xl md:p-6 card-3d">
-        
-        <div class="flex items-center gap-2 mb-3">
-            <div class="flex items-center justify-center w-8 h-8 text-sm font-black text-white rounded-lg bg-gradient-to-br from-blue-500 to-blue-600">Q<span id="q-number">1</span></div>
-            <div class="flex-1"><span id="question-category" class="text-[10px] font-bold tracking-wider text-blue-600 uppercase">Study Abroad</span></div>
-            <div class="text-xl">🌏</div>
-        </div>
-
-        <h2 id="question-text" class="mb-3 text-lg font-bold leading-snug text-gray-800">Đang tải câu hỏi...</h2>
-
-        <div id="answers-container" class="grid grid-cols-1 gap-2 mb-4">
-            </div>
-
-        <div id="feedback" class="hidden p-2 mb-2 text-sm font-bold text-center rounded-xl"></div>
-
-        <button id="next-btn" class="w-full py-3 text-base font-bold text-white transition-all duration-300 shadow-xl rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" disabled> 
-            <span id="next-btn-text">Chọn đáp án</span> <span id="next-btn-icon">👆</span> 
-        </button>
-    </div>
-</div>
-
-            <div id="screen-results" class="hidden w-full max-w-md">
-                <div class="p-8 text-center bg-white shadow-2xl rounded-3xl card-3d">
-                    <div id="result-emoji" class="mb-6 text-8xl">🎉</div>
-                    <h2 class="mb-4 text-3xl font-black text-gray-800">Quiz đã hoàn thành!</h2>
-                    <div class="p-6 mb-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl">
-                        <div class="mb-2 text-sm font-semibold text-white">Tổng điểm của bạn</div>
-                        <div id="final-score" class="text-6xl font-black text-white">0</div>
-                        <div class="mt-2 text-sm font-semibold text-white">trên 100</div>
-                    </div>
-                    <div id="unlock-message" class="hidden p-6 mb-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl animate-pulse">
-                        <div class="mb-2 text-2xl">🎊</div>
-                        <div id="congratulations-text-display" class="text-lg font-bold text-white">Chúc mừng! Bạn có thể xoay vòng xuay may mắn!</div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="p-4 bg-blue-50 rounded-xl">
-                            <div class="text-2xl font-black text-blue-600" id="correct-answers">0</div>
-                            <div class="text-sm font-semibold text-blue-500">Correct</div>
+                <div id="screen-form" class="hidden w-full max-w-md">
+                    <div class="p-5 bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
+                        <div class="mb-5 text-center">
+                            <div class="inline-block mb-3">
+                                <svg width="50" height="50" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="20" r="8" fill="#3b82f6" /> <path d="M16 44C16 36 23 32 32 32C41 32 48 36 48 44V48H16V44Z" fill="#3b82f6" /></svg>
+                            </div>
+                            <h2 class="mb-1 text-xl font-bold text-gray-800">Thông tin của bạn</h2>
+                            <p class="text-sm text-gray-600">Điền thông tin để bắt đầu</p>
                         </div>
-                        <div class="p-4 bg-purple-50 rounded-xl">
-                            <div class="text-2xl font-black text-purple-600" id="percentage">0%</div>
-                            <div class="text-sm font-semibold text-purple-500">Accuracy</div>
-                        </div>
+                        <form id="info-form" class="space-y-3">
+                            <div>
+                                <label for="full-name" class="block mb-1 text-sm font-semibold text-gray-700">Họ và Tên *</label> 
+                                <input type="text" id="full-name" required class="w-full px-4 py-3 transition-colors border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Nhập họ tên...">
+                            </div>
+                            <div>
+                                <label for="school-name" class="block mb-1 text-sm font-semibold text-gray-700">Tên Trường *</label> 
+                                <input type="text" id="school-name" required class="w-full px-4 py-3 transition-colors border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Nhập tên trường...">
+                            </div>
+                            <div class="p-3 border border-blue-100 bg-blue-50 rounded-xl">
+                                <label class="flex items-start gap-3 cursor-pointer select-none"> 
+                                    <input type="checkbox" id="phone-consent" required class="w-5 h-5 mt-0.5 text-blue-600 rounded border-gray-300"> 
+                                    <span id="consent-text-display" class="text-sm leading-snug text-gray-700"> Tôi đồng ý cung cấp số điện thoại để được tư vấn. </span> 
+                                </label>
+                            </div>
+                            <button type="submit" id="submit-form-btn" class="w-full py-3.5 text-lg font-bold text-white transition-all duration-300 shadow-xl rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 hover:scale-105 active:scale-95"> Tiếp tục ➡️ </button>
+                        </form>
                     </div>
-                    <button id="spin-wheel-btn" class="hidden w-full py-4 mb-3 text-lg font-bold text-white transition-all duration-300 shadow-xl rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:scale-105 active:scale-95"> Spin the Lucky Wheel 🎡 </button> 
-                    <button id="restart-btn" class="w-full py-4 text-lg font-bold text-blue-600 transition-all duration-300 rounded-2xl bg-blue-50 hover:scale-105 active:scale-95"> Take Quiz Again 🔄 </button>
                 </div>
-            </div>
 
-            <div id="screen-wheel" class="hidden w-full max-w-lg">
-                <div class="p-6 bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
-                    <h2 class="mb-8 text-3xl font-black text-center text-gray-800">Vòng xoay may mắn 🎡</h2>
-                    <div class="relative w-full max-w-sm mx-auto mb-8">
-                        <div class="absolute top-0 z-20 -translate-x-1/2 -translate-y-4 left-1/2">
-                            <div class="w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[30px] border-t-red-500"></div>
+                <div id="screen-language" class="hidden w-full max-w-md">
+                    <div class="p-6 bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
+                        <div class="mb-6 text-center">
+                            <div class="inline-block mb-2">
+                                <span class="text-5xl">🗣️</span>
+                            </div>
+                            <h2 class="mb-1 text-2xl font-bold text-gray-800">Chọn ngôn ngữ</h2>
+                            <p class="text-sm text-gray-600">Bạn muốn kiểm tra trình độ nào?</p>
                         </div>
-                        <div class="relative aspect-square">
-                            <canvas id="wheel-canvas" class="w-full h-full rounded-full shadow-2xl"></canvas>
+                        
+                        <div class="grid grid-cols-1 gap-3" id="language-options">
+                            <button class="flex items-center w-full gap-4 p-3.5 transition-all border-2 border-gray-100 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="en">
+                                <span class="text-2xl">🇬🇧</span> <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Anh</span>
+                            </button>
+                            <button class="flex items-center w-full gap-4 p-3.5 transition-all border-2 border-gray-100 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="zh">
+                                <span class="text-2xl">🇨🇳</span> <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Trung</span>
+                            </button>
+                            <button class="flex items-center w-full gap-4 p-3.5 transition-all border-2 border-gray-100 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="kr">
+                                <span class="text-2xl">🇰🇷</span> <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Hàn</span>
+                            </button>
+                            <button class="flex items-center w-full gap-4 p-3.5 transition-all border-2 border-gray-100 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="de">
+                                <span class="text-2xl">🇩🇪</span> <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Đức</span>
+                            </button>
+                            <button class="flex items-center w-full gap-4 p-3.5 transition-all border-2 border-gray-100 lang-btn rounded-xl hover:border-blue-500 hover:bg-blue-50 group" data-lang="jp">
+                                <span class="text-2xl">🇯🇵</span> <span class="font-bold text-gray-700 group-hover:text-blue-600">Tiếng Nhật</span>
+                            </button>
                         </div>
                     </div>
-                    <button id="spin-btn" class="w-full py-5 text-xl font-bold text-white transition-all duration-300 shadow-xl rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"> <span id="spin-btn-text">Spin the Wheel 🎯</span> </button>
-                    <div id="prize-display" class="hidden p-6 mt-6 text-center rounded-2xl bg-gradient-to-r from-green-400 to-blue-500">
-                        <div class="mb-3 text-4xl">🎁</div>
-                        <div class="mb-2 text-2xl font-black text-white">Chúc mừng!</div>
-                        <div id="prize-text" class="text-lg font-semibold text-white"></div>
-                    </div>
-                    <button id="back-to-results-btn" class="w-full py-3 mt-4 text-lg font-bold text-blue-600 transition-all duration-300 rounded-2xl bg-blue-50 hover:scale-105 active:scale-95"> Back to Results </button>
                 </div>
-            </div>
-        </div>
 
-        <div id="confetti-container" class="fixed inset-0 z-50 pointer-events-none"></div>
-        <div id="loading-indicator" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/50">
-            <div class="flex items-center gap-3 p-6 bg-white rounded-2xl">
-                <div class="w-6 h-6 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div><span class="font-semibold text-gray-700">Đang tải...</span>
+                <div id="screen-quiz" class="hidden w-full max-w-2xl">
+                    <div class="px-1 mb-4"> 
+                        <div class="flex items-center justify-between mb-1 text-white">
+                            <span class="px-2 py-1 text-xs font-bold tracking-wider uppercase rounded-lg bg-black/20">Câu <span id="current-q">1</span>/20</span> 
+                            <span class="px-2 py-1 text-xs font-bold tracking-wider uppercase rounded-lg bg-black/20">Điểm: <span id="score-display">0</span></span>
+                        </div>
+                        <div class="w-full h-2.5 overflow-hidden rounded-full bg-white/30 backdrop-blur-sm">
+                            <div id="progress-bar" class="h-full transition-all duration-500 rounded-full bg-gradient-to-r from-green-300 to-white" style="width: 5%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 mb-4 bg-white shadow-2xl rounded-2xl md:p-6 card-3d">
+                        <div class="flex items-center gap-3 pb-3 mb-4 border-b border-gray-100">
+                            <div class="flex items-center justify-center w-10 h-10 text-lg font-black text-white shadow-lg rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-200">Q<span id="q-number">1</span></div>
+                            <div class="flex-1"><span id="question-category" class="text-[10px] font-extrabold tracking-widest text-blue-500 uppercase">STUDY ABROAD</span></div>
+                        </div>
+
+                        <h2 id="question-text" class="mb-5 text-lg md:text-xl font-bold leading-relaxed text-gray-800 min-h-[3rem]">Đang tải câu hỏi...</h2>
+
+                        <div id="answers-container" class="grid grid-cols-1 gap-3 mb-5">
+                            </div>
+
+                        <div id="feedback" class="hidden p-3 mb-3 text-sm font-bold text-center rounded-xl animate-pulse"></div>
+
+                        <button id="next-btn" class="w-full py-3.5 text-base font-bold text-white transition-all duration-300 shadow-xl rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100" disabled> 
+                            <span id="next-btn-text">Chọn đáp án</span> <span id="next-btn-icon">👆</span> 
+                        </button>
+                    </div>
+                </div>
+
+                <div id="screen-results" class="hidden w-full max-w-md">
+                    <div class="p-6 text-center bg-white shadow-2xl rounded-3xl card-3d">
+                        <div id="result-emoji" class="mb-4 text-7xl animate-bounce">🎉</div>
+                        <h2 class="mb-2 text-2xl font-black text-gray-800">Hoàn thành!</h2>
+                        
+                        <div class="p-5 mb-5 text-white shadow-xl bg-gradient-to-tr from-blue-500 to-blue-600 rounded-2xl shadow-blue-200">
+                            <div class="mb-1 text-xs font-bold uppercase opacity-80">Tổng điểm</div>
+                            <div class="flex items-baseline justify-center gap-1">
+                                <div id="final-score" class="text-5xl font-black">0</div>
+                                <div class="text-lg">/ 100</div>
+                            </div>
+                        </div>
+
+                        <div id="unlock-message" class="hidden p-4 mb-5 border border-yellow-200 bg-yellow-50 rounded-xl">
+                            <div class="mb-1 text-xl">🎊</div>
+                            <div id="congratulations-text-display" class="text-sm font-bold text-yellow-700">Chúc mừng! Bạn được quay vòng xoay may mắn!</div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="p-3 border border-gray-100 bg-gray-50 rounded-xl">
+                                <div class="text-xl font-black text-green-500" id="correct-answers">0</div>
+                                <div class="text-xs font-bold text-gray-500">Câu đúng</div>
+                            </div>
+                            <div class="p-3 border border-gray-100 bg-gray-50 rounded-xl">
+                                <div class="text-xl font-black text-purple-500" id="percentage">0%</div>
+                                <div class="text-xs font-bold text-gray-500">Chính xác</div>
+                            </div>
+                        </div>
+
+                        <button id="spin-wheel-btn" class="hidden w-full py-3.5 mb-3 text-lg font-bold text-white transition-all duration-300 shadow-xl rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:scale-105 active:scale-95"> Quay ngay 🎡 </button> 
+                        <button id="restart-btn" class="w-full py-3.5 text-lg font-bold text-blue-600 transition-all duration-300 rounded-xl bg-blue-50 hover:bg-blue-100"> Thi lại lần nữa 🔄 </button>
+                    </div>
+                </div>
+
+                <div id="screen-wheel" class="hidden w-full max-w-lg">
+                    <div class="p-6 text-center bg-white shadow-2xl rounded-3xl md:p-8 card-3d">
+                        <h2 class="mb-6 text-2xl font-black text-gray-800">Vòng xoay may mắn</h2>
+                        <div class="relative w-full max-w-[300px] mx-auto mb-6">
+                            <div class="absolute top-0 z-20 -translate-x-1/2 -translate-y-3 left-1/2">
+                                <div class="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[25px] border-t-red-500 drop-shadow-md"></div>
+                            </div>
+                            <div class="relative aspect-square">
+                                <canvas id="wheel-canvas" class="w-full h-full border-4 border-white rounded-full shadow-2xl"></canvas>
+                            </div>
+                        </div>
+                        <button id="spin-btn" class="w-full py-4 text-xl font-bold text-white transition-all duration-300 shadow-xl rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"> <span id="spin-btn-text">QUAY NGAY 🎯</span> </button>
+                        <div id="prize-display" class="hidden p-4 mt-4 text-center border border-green-200 rounded-2xl bg-green-50 animate-bounce">
+                            <div class="mb-1 text-3xl">🎁</div>
+                            <div class="font-bold text-green-700">Chúc mừng bạn trúng:</div>
+                            <div id="prize-text" class="text-lg font-black text-green-600 uppercase"></div>
+                        </div>
+                        <button id="back-to-results-btn" class="w-full py-3 mt-4 text-sm font-bold text-gray-500 transition-all duration-300 rounded-2xl hover:text-gray-800"> Quay lại kết quả </button>
+                    </div>
+                </div>
+
+            </div> </div> <div id="confetti-container" class="fixed inset-0 z-50 pointer-events-none"></div>
+        <div id="loading-indicator" class="fixed inset-0 z-[100] flex items-center justify-center hidden bg-black/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-3 p-5 bg-white shadow-2xl rounded-2xl animate-bounce">
+                <div class="w-8 h-8 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div><span class="text-sm font-bold text-gray-700">Đang xử lý...</span>
             </div>
         </div>
     </div>

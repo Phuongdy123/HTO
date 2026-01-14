@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cập nhật điểm số vào biến dữ liệu người chơi
         participantData.score = score;
         participantData.unlocked_wheel = unlockedWheel;
-        saveSession(participantData); // Lưu lại vào LocalStorage phòng khi reload
+        saveSession(participantData); // Lưu lại vào LocalStorage phòng khi     reload
 
         // Bật hiệu ứng loading để người dùng biết đang lưu
         showLoading(true);

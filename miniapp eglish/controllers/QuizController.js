@@ -8,7 +8,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctCount = 0;
     let selectedAnswer = null;
     let answered = false;
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzHinyWMCmrDYQstR_305iNIr6vfusv4xMYR8fTB-uDETN9M68UuyuqQDi-iuxN0a4T/exec';
 
+    // Hàm gửi dữ liệu chung
+    async function sendDataToGoogleSheet(data) {
+        if (!data) return;
+        
+        const formData = new FormData();
+        formData.append("fullname", data.full_name);
+        formData.append("school", data.school_name);
+        
+        let phoneVal = data.phone_consent ? "Đồng ý cung cấp SĐT" : "Không";
+        formData.append("phone", phoneVal);
+        
+        formData.append("score", data.score || 0);
+        formData.append("prize", data.prize_won || "");
+
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors' // <--- BẮT BUỘC PHẢI CÓ DÒNG NÀY
+            });
+            console.log("Đã gửi dữ liệu (no-cors)!");
+        } catch (error) {
+            console.error("Lỗi gửi dữ liệu:", error);
+        }
+    }
     // --- CẤU HÌNH LƯU TRỮ (LOCAL STORAGE) ---
     const STORAGE_KEY = 'quiz_user_session_v1';
 
@@ -75,16 +101,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. FORM SUBMIT
-    const infoForm = document.getElementById('info-form');
+  const infoForm = document.getElementById('info-form');
     if (infoForm) {
         infoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const submitBtn = document.getElementById('submit-form-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Hiệu ứng loading
+            submitBtn.innerHTML = 'Đang tải... ⏳';
+            submitBtn.disabled = true;
+
             const fullName = document.getElementById('full-name').value.trim();
             const schoolName = document.getElementById('school-name').value.trim();
-            const phoneConsent = document.getElementById('phone-consent').checked;
+            // Nếu bạn đã đổi checkbox thành input số điện thoại thì sửa dòng dưới:
+            const phoneElement = document.getElementById('phone-number'); 
+            const phoneConsent = phoneElement ? phoneElement.value : document.getElementById('phone-consent').checked;
             
-            if (!fullName || !schoolName || !phoneConsent) return;
+            if (!fullName || !schoolName) {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                return;
+            }
             
             participantData = {
                 full_name: fullName,
@@ -98,7 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             
             saveSession(participantData);
-            showScreen('language'); // Điền xong -> Vào chọn ngôn ngữ
+
+            // --- GỬI DỮ LIỆU LẦN 1: ĐĂNG KÝ ---
+            await sendDataToGoogleSheet(participantData);
+            
+            // Trả lại nút và chuyển trang
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            showScreen('language'); 
         });
     }
 
@@ -202,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         q.options.forEach((option, index) => {
             const btn = document.createElement('button');
-            btn.className = 'answer-btn w-full p-4 rounded-2xl text-left font-bold text-white shadow-lg flex items-center gap-4';
+            btn.className = 'flex items-center w-full gap-4 p-4 font-bold text-left text-white shadow-lg answer-btn rounded-2xl';
             btn.style.background = answerColors[index % answerColors.length];
             btn.dataset.answer = index;
             btn.innerHTML = `
@@ -301,42 +347,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showResults() {
-        const percentage = Math.round((correctCount / questions.length) * 100);
-        const unlockedWheel = score >= 60; 
-        
-        document.getElementById('final-score').textContent = score;
-        document.getElementById('correct-answers').textContent = correctCount;
-        document.getElementById('percentage').textContent = `${percentage}%`;
-        
-        const unlockMsg = document.getElementById('unlock-message');
-        const spinBtn = document.getElementById('spin-wheel-btn');
+    // 1. Tính toán điểm số & UI (Giữ nguyên)
+    const percentage = Math.round((correctCount / questions.length) * 100);
+    const unlockedWheel = score >= 60; 
+    
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('correct-answers').textContent = correctCount;
+    document.getElementById('percentage').textContent = `${percentage}%`;
+    
+    const unlockMsg = document.getElementById('unlock-message');
+    const spinBtn = document.getElementById('spin-wheel-btn');
 
-        if (score === 100) document.getElementById('result-emoji').textContent = '🏆';
-        else if (score >= 80) document.getElementById('result-emoji').textContent = '🎉';
-        else if (score >= 60) document.getElementById('result-emoji').textContent = '😊';
-        else document.getElementById('result-emoji').textContent = '💪';
-        
-        if (unlockedWheel) {
-            if(unlockMsg) unlockMsg.classList.remove('hidden');
-            if(spinBtn) spinBtn.classList.remove('hidden');
-            createConfetti();
-        } else {
-            if(unlockMsg) unlockMsg.classList.add('hidden');
-            if(spinBtn) spinBtn.classList.add('hidden');
-        }
-        
-        // Save to Data SDK
-        if (participantData && window.dataSdk) {
-            showLoading(true);
-            participantData.score = score;
-            participantData.unlocked_wheel = unlockedWheel;
-            const result = await window.dataSdk.create(participantData);
-            showLoading(false);
-            if (!result.isOk) console.error('Failed to save participant data');
-        }
-        
-        showScreen('results');
+    if (score === 100) document.getElementById('result-emoji').textContent = '🏆';
+    else if (score >= 80) document.getElementById('result-emoji').textContent = '🎉';
+    else if (score >= 60) document.getElementById('result-emoji').textContent = '😊';
+    else document.getElementById('result-emoji').textContent = '💪';
+    
+    if (unlockedWheel) {
+        if(unlockMsg) unlockMsg.classList.remove('hidden');
+        if(spinBtn) spinBtn.classList.remove('hidden');
+        createConfetti();
+    } else {
+        if(unlockMsg) unlockMsg.classList.add('hidden');
+        if(spinBtn) spinBtn.classList.add('hidden');
     }
+    
+    // 2. CẬP NHẬT DỮ LIỆU & GỬI ĐI (Phần mới bổ sung)
+    if (participantData) {
+        // Cập nhật điểm số vào biến dữ liệu người chơi
+        participantData.score = score;
+        participantData.unlocked_wheel = unlockedWheel;
+        saveSession(participantData); // Lưu lại vào LocalStorage phòng khi reload
+
+        // Bật hiệu ứng loading để người dùng biết đang lưu
+        showLoading(true);
+
+        try {
+            // --- GỬI VỀ GOOGLE SHEET ---
+            // Hàm này phải được khai báo ở đầu file như hướng dẫn trước
+            if (typeof sendDataToGoogleSheet === 'function') {
+                await sendDataToGoogleSheet(participantData);
+            } else {
+                console.warn("Chưa khai báo hàm sendDataToGoogleSheet");
+            }
+
+            // --- GỬI VỀ DATA SDK (Code cũ của bạn) ---
+            if (window.dataSdk) {
+                const result = await window.dataSdk.create(participantData);
+                if (!result.isOk) console.error('Failed to save participant data SDK');
+            }
+        } catch (err) {
+            console.error("Lỗi khi lưu dữ liệu cuối game:", err);
+        } finally {
+            // Tắt loading dù thành công hay thất bại
+            showLoading(false);
+        }
+    }
+    
+    showScreen('results');
+}
 
     // ============================================================
     // --- LUCKY WHEEL & CONFETTI ---

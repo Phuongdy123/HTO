@@ -10,14 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let answered = false;
     let skillMetrics = {}; // Theo dõi điểm từng kỹ năng
     
-    // URL Google Apps Script của bạn
+    // URL Google Apps Script của bạn (GIỮ NGUYÊN)
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwY1lyZTBZP_zpnSP3_6_fKo3NZZY21z1tCS1eJTPMGtJlCrgBJcr5CrBC77yxvDQrW/exec';
 
+    // ============================================================
     // --- CÁC HÀM HỖ TRỢ LOGIC (THUẬT TOÁN) ---
+    // ============================================================
 
-    // 1. Hàm khởi tạo bộ đếm kỹ năng (Gọi khi bắt đầu Quiz)
+    // 1. Hàm khởi tạo bộ đếm kỹ năng (TÍNH ĐIỂM ĐỘNG)
     function initSkillTracker() {
         skillMetrics = {};
+        const pointsPerQuestion = 100 / questions.length; // Tự động chia điểm (VD: 30 câu ~ 3.33 điểm/câu)
+
         questions.forEach(q => {
             // Lấy category, nếu không có thì gán mặc định
             const cat = q.category ? q.category.toUpperCase() : 'GENERAL';
@@ -25,12 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!skillMetrics[cat]) {
                 skillMetrics[cat] = { current: 0, total: 0 };
             }
-            // Mỗi câu (dù trắc nghiệm hay viết) đều tính 5 điểm tối đa
-            skillMetrics[cat].total += 5; 
+            // Cộng điểm tối đa cho kỹ năng này
+            skillMetrics[cat].total += pointsPerQuestion; 
         });
     }
 
-    // 2. Hàm xếp loại học viên dựa trên điểm số
+    // 2. Hàm xếp loại học viên
     function getStudentRank(score) {
         if (score >= 90) {
             return { label: "XUẤT SẮC 🌟", color: "text-yellow-500", message: "Chúc mừng bạn đã hoàn thành bài test xuất sắc" };
@@ -43,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 3. Hàm gửi dữ liệu lên Google Sheet (Full fields)
+    // 3. Hàm gửi dữ liệu lên Google Sheet
     async function sendDataToGoogleSheet(data) {
         if (!data) return;
         
@@ -53,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append("phone", data.phone_number);
         formData.append("email", data.email);
         formData.append("score", data.score || 0);
-        formData.append("rank", data.rank || "");           // Xếp loại
-        formData.append("skills", data.skill_breakdown || ""); // Chi tiết kỹ năng
+        formData.append("rank", data.rank || "");           
+        formData.append("skills", data.skill_breakdown || ""); 
         formData.append("prize", data.prize_won || "");
         
         // Gộp nội dung bài viết thành chuỗi
@@ -76,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CẤU HÌNH LƯU TRỮ (LOCAL STORAGE) ---
-    const STORAGE_KEY = 'quiz_user_session_v2'; // Đổi key v2 để tránh cache cũ
+    const STORAGE_KEY = 'quiz_user_session_v3'; // Bump version để clear cache cũ
 
     function saveSession(data) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.error(e); }
@@ -172,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 phone_consent: phoneConsent,
                 score: 0,
                 language: '',
-                writing_responses: [], // Khởi tạo mảng lưu bài viết
+                writing_responses: [],
                 completed_at: new Date().toISOString(),
                 unlocked_wheel: false,
                 prize_won: ''
@@ -208,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         correctCount = 0;
                         currentQuestion = 0;
                         
-                        // Khởi tạo bộ đếm kỹ năng
-                        initSkillTracker();
+                        initSkillTracker(); // Khởi tạo điểm chuẩn
 
                         showScreen('quiz');
                         renderQuestion();
@@ -256,10 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // --- LOGIC QUIZ ---
+    // --- LOGIC QUIZ (CORE) ---
     // ============================================================
 
-    function renderQuestion() {
+function renderQuestion() {
         if (!questions || questions.length === 0) return;
 
         const q = questions[currentQuestion];
@@ -272,7 +275,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if(totalEl) totalEl.textContent = questions.length;
 
         document.getElementById('question-category').textContent = q.category || 'QUIZ';
-        document.getElementById('question-text').textContent = q.question;
+        
+        // --- [FIX] XỬ LÝ ẨN/HIỆN TIÊU ĐỀ ĐỂ TRÁNH LẶP LẠI ---
+        const mainQText = document.getElementById('question-text');
+        if (q.type === 'writing') {
+            mainQText.style.display = 'none'; // Ẩn tiêu đề gốc nếu là câu Writing
+        } else {
+            mainQText.style.display = 'block'; // Hiện lại nếu là trắc nghiệm/nghe
+            mainQText.textContent = q.question;
+        }
+        // ----------------------------------------------------
         
         const progress = ((currentQuestion + 1) / questions.length) * 100;
         document.getElementById('progress-bar').style.width = `${progress}%`;
@@ -288,80 +300,76 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- RENDER THEO LOẠI CÂU HỎI ---
 
         // A. LISTENING
-   // A. LISTENING (SỬ DỤNG TRỢ LÝ ẢO TRÌNH DUYỆT)
         if (q.type === 'listening' && q.audioScript) {
             const audioDiv = document.createElement('div');
             audioDiv.className = "p-4 mb-6 text-center border border-blue-100 bg-blue-50 rounded-2xl";
-            
-            // Tạo ID duy nhất cho nút để xử lý animation
             const btnId = `speak-btn-${currentQuestion}`;
 
             audioDiv.innerHTML = `
                 <div class="mb-3 text-xs font-bold text-blue-500 uppercase tracking-wider flex items-center justify-center gap-2">
                     <span>🎧 Phần thi Nghe</span>
                 </div>
-                
                 <button id="${btnId}" class="relative inline-flex items-center justify-center gap-2 px-8 py-3 font-bold text-white transition-all transform bg-blue-500 shadow-lg rounded-full hover:bg-blue-600 hover:scale-105 active:scale-95 group">
                     <span class="text-2xl">🔊</span>
                     <span>Bấm để nghe</span>
-                    
                     <span class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-blue-400 hidden" id="${btnId}-ping"></span>
                 </button>
             `;
-
             container.appendChild(audioDiv);
 
-            // Gắn sự kiện Click để đọc
             setTimeout(() => {
                 const btn = document.getElementById(btnId);
                 const ping = document.getElementById(`${btnId}-ping`);
-                
                 if (btn) {
                     btn.addEventListener('click', () => {
-                        // Ngừng các âm thanh đang đọc dở (nếu có)
                         window.speechSynthesis.cancel();
-
-                        // Tạo giọng đọc mới
                         const utterance = new SpeechSynthesisUtterance(q.audioScript);
-                        
-                        // Thiết lập ngôn ngữ (Nếu trong data không có thì mặc định tiếng Anh)
                         utterance.lang = q.langCode || 'en-US'; 
-                        utterance.rate = 0.9; // Tốc độ đọc (0.9 là vừa phải, 1 là bình thường)
-                        
-                        // Hiệu ứng khi bắt đầu đọc
+                        utterance.rate = 0.9;
                         utterance.onstart = () => {
                             btn.classList.add('bg-green-500', 'hover:bg-green-600');
                             btn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
                             btn.querySelector('span:nth-child(2)').textContent = "Đang đọc...";
                             if(ping) ping.classList.remove('hidden');
                         };
-
-                        // Hiệu ứng khi đọc xong
                         utterance.onend = () => {
                             btn.classList.add('bg-blue-500', 'hover:bg-blue-600');
                             btn.classList.remove('bg-green-500', 'hover:bg-green-600');
                             btn.querySelector('span:nth-child(2)').textContent = "Nghe lại";
                             if(ping) ping.classList.add('hidden');
                         };
-
-                        // Bắt đầu đọc
                         window.speechSynthesis.speak(utterance);
                     });
                 }
             }, 0);
         }
 
-        // B. WRITING
+        // B. WRITING (ĐIỀN TỪ) - [ĐÃ NÂNG CẤP]
         if (q.type === 'writing') {
             const wrapper = document.createElement('div');
-            wrapper.className = "w-full";
+            wrapper.className = "flex flex-col items-center w-full gap-6 mt-2";
             
-            const textArea = document.createElement('textarea');
-            textArea.id = 'writing-input';
-            textArea.className = "w-full h-32 p-4 text-gray-700 transition-all border-2 border-gray-200 resize-none bg-gray-50 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-100";
-            textArea.placeholder = "Nhập câu trả lời của bạn tại đây...";
+            // 1. Hiển thị câu hỏi (Thay thế dấu gạch dưới bằng ô trống)
+            const questionText = document.createElement('div');
+            questionText.className = "text-xl font-bold leading-relaxed text-center text-gray-800 md:text-2xl";
+            questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
+            wrapper.appendChild(questionText);
+
+            // 2. Ô nhập liệu
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'writing-input';
+            input.className = "w-full max-w-md p-4 text-xl font-bold text-center placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
+            input.placeholder = "Nhập đáp án của bạn...";
+            input.autocomplete = "off";
             
-            textArea.addEventListener('input', (e) => {
+            // 3. Khu vực hiện thông báo Đúng/Sai (Feedback)
+            const feedbackMsg = document.createElement('div');
+            feedbackMsg.id = 'writing-feedback-msg';
+            feedbackMsg.className = "hidden mt-2 text-lg font-bold transition-all"; 
+
+            // Xử lý sự kiện gõ phím
+            input.addEventListener('input', (e) => {
                 if(e.target.value.trim().length > 0) {
                     enableNextButton(); 
                 } else {
@@ -369,9 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            wrapper.appendChild(textArea);
+            // Xử lý phím Enter -> Gọi hàm kiểm tra
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && e.target.value.trim().length > 0) {
+                    checkWritingAnswerAndNext(); // Gọi hàm xử lý mới
+                }
+            });
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(feedbackMsg); // Thêm dòng thông báo vào dưới input
             container.appendChild(wrapper);
-            return; // Writing xong là return, không render nút trắc nghiệm
+            return; 
         }
 
         // C. MULTIPLE CHOICE
@@ -380,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const btn = document.createElement('button');
                 btn.className = 'flex items-center w-full gap-4 p-4 font-bold text-left text-white shadow-md answer-btn rounded-xl transition-all transform hover:scale-[1.01] active:scale-95';
                 
-                // Màu sắc gradient cho nút
                 const colors = [
                     'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
                     'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)', 
@@ -398,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-
     function selectAnswer(index) {
         if (answered) return;
         
@@ -408,15 +422,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const q = questions[currentQuestion];
         const isCorrect = index === q.correct;
         const cat = q.category ? q.category.toUpperCase() : 'GENERAL';
+        const pointsPerQuestion = 100 / questions.length; // Tính điểm động
 
         if (isCorrect) {
-            score += 5;
+            score += pointsPerQuestion;
             correctCount++;
             // Cập nhật điểm kỹ năng
-            if(skillMetrics[cat]) skillMetrics[cat].current += 5;
+            if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
         }
         
-        document.getElementById('score-display').textContent = score;
+        // Hiển thị làm tròn
+        document.getElementById('score-display').textContent = Math.round(score);
+
         showFeedback(isCorrect, q.correct);
         highlightAnswers(index, q.correct);
         enableNextButton();
@@ -427,13 +444,16 @@ document.addEventListener('DOMContentLoaded', () => {
         feedback.classList.remove('hidden');
         
         if (isCorrect) {
-            feedback.style.background = '#dcfce7'; // green-100
-            feedback.style.color = '#15803d';      // green-700
+            feedback.style.background = '#dcfce7'; 
+            feedback.style.color = '#15803d';      
             feedback.style.border = '1px solid #86efac';
-            feedback.innerHTML = '🎉 Chính xác! +5 điểm';
+            
+            // Tính số điểm cộng hiển thị (làm tròn)
+            const points = Math.round(100 / questions.length);
+            feedback.innerHTML = `🎉 Chính xác! +${points} điểm`;
         } else {
-            feedback.style.background = '#fee2e2'; // red-100
-            feedback.style.color = '#b91c1c';      // red-700
+            feedback.style.background = '#fee2e2'; 
+            feedback.style.color = '#b91c1c';      
             feedback.style.border = '1px solid #fca5a5';
             feedback.innerHTML = `❌ Đáp án đúng: ${questions[currentQuestion].options[correctIndex]}`;
         }
@@ -472,30 +492,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function disableNextButton() {
         const btn = document.getElementById('next-btn');
         btn.disabled = true;
-        document.getElementById('next-btn-text').textContent = 'Chọn đáp án';
+        document.getElementById('next-btn-text').textContent = 'Chọn/Nhập đáp án';
         document.getElementById('next-btn-icon').textContent = '👆';
     }
 
-    async function nextQuestion() {
+async function nextQuestion() {
         const q = questions[currentQuestion];
 
-        // --- XỬ LÝ LƯU BÀI VIẾT (WRITING) ---
+        // --- NẾU LÀ CÂU ĐIỀN TỪ (WRITING) ---
         if (q.type === 'writing') {
-            const inputVal = document.getElementById('writing-input').value;
-            
-            if (!participantData.writing_responses) participantData.writing_responses = [];
-            participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputVal}`);
-
-            // Cộng điểm hoàn thành
-            score += 5; 
-            
-            // Cập nhật điểm kỹ năng Writing
-            const cat = 'WRITING';
-            if(skillMetrics[cat]) skillMetrics[cat].current += 5;
-            
-            document.getElementById('score-display').textContent = score;
+            // Gọi hàm xử lý riêng (có hiệu ứng delay và hiện đáp án đúng)
+            await checkWritingAnswerAndNext();
+            return; // Dừng tại đây, không chạy code bên dưới nữa
         }
 
+        // --- NẾU LÀ CÂU TRẮC NGHIỆM / NGHE (Logic cũ) ---
         if (currentQuestion < questions.length - 1) {
             currentQuestion++;
             renderQuestion();
@@ -503,20 +514,94 @@ document.addEventListener('DOMContentLoaded', () => {
             await showResults();
         }
     }
+    // Hàm xử lý riêng cho phần Writing: Chấm điểm, hiện đáp án và delay
+    async function checkWritingAnswerAndNext() {
+        if (answered) return; // Chặn người dùng bấm Enter nhiều lần
+        answered = true;
 
-    async function showResults() {
-        const percentage = Math.round((correctCount / questions.length) * 100);
-        const unlockedWheel = score >= 60; 
+        const q = questions[currentQuestion];
+        const inputEl = document.getElementById('writing-input');
+        const feedbackEl = document.getElementById('writing-feedback-msg'); // Element hiển thị thông báo
+        const nextBtn = document.getElementById('next-btn');
         
-        // 1. GỌI THUẬT TOÁN XẾP LOẠI
+        // 1. Khóa không cho sửa đáp án và khóa nút Next
+        inputEl.disabled = true;
+        nextBtn.disabled = true;
+
+        const userAns = inputEl.value.trim().toLowerCase();
+        const correctAns = q.correctAnswer ? q.correctAnswer.trim().toLowerCase() : "";
+        const pointsPerQuestion = 100 / questions.length;
+
+        // Lưu log câu trả lời
+        if (!participantData.writing_responses) participantData.writing_responses = [];
+        participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputEl.value} (Đáp án: ${q.correctAnswer})`);
+
+        // 2. SO SÁNH ĐÁP ÁN
+        if (userAns === correctAns) {
+            // --- TRƯỜNG HỢP ĐÚNG ---
+            score += pointsPerQuestion;
+            correctCount++;
+            
+            // Cộng điểm kỹ năng
+            const cat = q.category ? q.category.toUpperCase() : 'WRITING';
+            if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
+            
+            // Đổi màu xanh
+            inputEl.className = "w-full max-w-md p-4 text-xl font-bold text-center text-green-700 border-2 border-green-500 shadow-inner bg-green-50 rounded-xl";
+            
+            // Hiện thông báo chúc mừng
+            if(feedbackEl) {
+                feedbackEl.innerHTML = "🎉 Chính xác! +Điểm";
+                feedbackEl.className = "block mt-4 text-lg font-bold text-center text-green-600 animate-bounce";
+            }
+        } else {
+            // --- TRƯỜNG HỢP SAI ---
+            // Đổi màu đỏ
+            inputEl.className = "w-full max-w-md p-4 text-xl font-bold text-center text-red-700 border-2 border-red-500 shadow-inner bg-red-50 rounded-xl";
+            
+            // HIỆN ĐÁP ÁN ĐÚNG
+            if(feedbackEl) {
+                feedbackEl.innerHTML = `
+                    <div class="text-red-500 mb-1">❌ Sai rồi!</div>
+                    <div class="text-gray-600 text-sm">Đáp án đúng là:</div>
+                    <div class="text-blue-600 font-black text-2xl uppercase mt-1">${q.correctAnswer}</div>
+                `;
+                feedbackEl.className = "block p-3 mt-4 text-center border border-red-100 rounded-lg bg-red-50";
+            }
+        }
+
+        // Cập nhật điểm số trên giao diện
+        document.getElementById('score-display').textContent = Math.round(score);
+
+        // 3. QUAN TRỌNG: Đợi 2.5 giây (2500ms) để người dùng đọc kết quả
+        await new Promise(r => setTimeout(r, 2500));
+
+        // 4. Tự động chuyển câu tiếp theo
+        if (currentQuestion < questions.length - 1) {
+            currentQuestion++;
+            renderQuestion();
+        } else {
+            await showResults();
+        }
+    }
+ async function showResults() {
+        // --- 1. LÀM TRÒN ĐIỂM TỔNG KẾT ---
+        // Xử lý sai số thập phân (3.333...) để ra số đẹp (0-100)
+        score = Math.round(score); 
+        if (score > 100) score = 100;
+
+        const percentage = Math.round((correctCount / questions.length) * 100);
+        const unlockedWheel = score >= 60; // Mở khóa vòng quay nếu >= 60 điểm
+        
+        // --- 2. GỌI THUẬT TOÁN XẾP LOẠI ---
         const rankInfo = getStudentRank(score);
 
-        // 2. HIỂN THỊ CƠ BẢN
+        // --- 3. CẬP NHẬT GIAO DIỆN KẾT QUẢ CHÍNH ---
         document.getElementById('final-score').textContent = score;
         document.getElementById('correct-answers').textContent = correctCount;
         document.getElementById('percentage').textContent = `${percentage}%`;
 
-        // Cập nhật Tiêu đề Kết quả theo Xếp loại
+        // Cập nhật Tiêu đề và Lời nhắn theo Xếp loại
         const titleEl = document.querySelector('#screen-results h2'); 
         if(titleEl) {
             titleEl.textContent = rankInfo.label;
@@ -527,75 +612,91 @@ document.addEventListener('DOMContentLoaded', () => {
             subTitleEl.textContent = rankInfo.message;
         }
 
-        // 3. TẠO HTML HIỂN THỊ KỸ NĂNG (SKILL BARS)
-        let skillsHTML = '<div class="space-y-3 mb-6 w-full p-4 bg-gray-50 rounded-2xl border border-gray-100">';
+        // --- 4. TẠO THANH KỸ NĂNG (SKILL BARS) ---
+        // [QUAN TRỌNG] Phần này sẽ hiển thị điểm cho từng kỹ năng bao gồm cả WRITING
+        let skillsHTML = '<div class="space-y-4 mb-6 w-full p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">';
+        
         for (const [cat, data] of Object.entries(skillMetrics)) {
-            // Tránh chia cho 0
-            const total = data.total > 0 ? data.total : 1;
-            const percent = Math.round((data.current / total) * 100);
-            
-            let displayCat = cat;
-            if(cat === 'LISTENING') displayCat = '🎧 Nghe Hiểu';
-            else if(cat === 'READING') displayCat = '📖 Đọc Hiểu';
-            else if(cat === 'GRAMMAR') displayCat = '✍️ Ngữ Pháp';
-            else if(cat === 'VOCABULARY') displayCat = '🔤 Từ Vựng';
-            else if(cat === 'WRITING') displayCat = '📝 Kỹ Năng Viết';
+            // Chỉ hiển thị nếu kỹ năng đó có câu hỏi trong bài thi
+            if (data.total > 0) {
+                const percent = Math.round((data.current / data.total) * 100);
+                
+                // Làm tròn điểm hiển thị (VD: 3/10 thay vì 3.33/10)
+                const displayCurrent = Math.round(data.current);
+                const displayTotal = Math.round(data.total);
 
-            skillsHTML += `
-                <div class="flex flex-col gap-1">
-                    <div class="flex justify-between text-xs font-bold text-gray-600 uppercase tracking-wide">
-                        <span>${displayCat}</span>
-                        <span>${data.current}/${data.total}</span>
+                // Mapping tên kỹ năng sang tiếng Việt
+                let displayCat = cat;
+                if(cat === 'LISTENING') displayCat = '🎧 Nghe Hiểu (Listening)';
+                else if(cat === 'READING') displayCat = '📖 Đọc Hiểu (Reading)';
+                else if(cat === 'GRAMMAR') displayCat = '✍️ Ngữ Pháp (Grammar)';
+                else if(cat === 'VOCABULARY') displayCat = '🔤 Từ Vựng (Vocabulary)';
+                else if(cat === 'WRITING') displayCat = '📝 Kỹ Năng Viết (Writing)'; // [QUAN TRỌNG] Đã thêm dòng này
+
+                // HTML cho thanh skill
+                skillsHTML += `
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between text-xs font-bold text-gray-600 uppercase tracking-wide">
+                            <span>${displayCat}</span>
+                            <span class="text-blue-600">${displayCurrent}/${displayTotal}</span>
+                        </div>
+                        <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 ease-out" style="width: ${percent}%"></div>
+                        </div>
                     </div>
-                    <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-blue-500 rounded-full transition-all duration-1000" style="width: ${percent}%"></div>
-                    </div>
-                </div>
-            `;
+                `;
+            }
         }
         skillsHTML += '</div>';
 
-        // Chèn vào giao diện (tìm vị trí thích hợp)
+        // Chèn vào HTML (Tìm vị trí thích hợp trong thẻ card kết quả)
         const resultCard = document.querySelector('#screen-results .card-3d');
         let skillsContainer = document.getElementById('skills-breakdown');
+        
+        // Nếu chưa có container thì tạo mới
         if (!skillsContainer) {
             skillsContainer = document.createElement('div');
             skillsContainer.id = 'skills-breakdown';
-            // Chèn trước nút Unlock Message hoặc trước Grid thống kê
+            // Chèn trước thông báo mở khóa hoặc trước Grid thống kê
             const beforeTarget = document.getElementById('unlock-message') || document.querySelector('#screen-results .grid');
             if(beforeTarget && resultCard) {
                 resultCard.insertBefore(skillsContainer, beforeTarget);
+            } else if (resultCard) {
+                resultCard.appendChild(skillsContainer);
             }
         }
         skillsContainer.innerHTML = skillsHTML;
 
-        // 4. LOGIC VÒNG QUAY & LƯU DATA
+        // --- 5. LOGIC VÒNG QUAY & LƯU DATA ---
         const unlockMsg = document.getElementById('unlock-message');
         const spinBtn = document.getElementById('spin-wheel-btn');
 
+        // Cập nhật emoji cảm xúc dựa trên điểm số
         if (score === 100) document.getElementById('result-emoji').textContent = '🏆';
         else if (score >= 80) document.getElementById('result-emoji').textContent = '🎉';
         else if (score >= 60) document.getElementById('result-emoji').textContent = '😊';
         else document.getElementById('result-emoji').textContent = '💪';
         
+        // Ẩn/Hiện nút quay thưởng
         if (unlockedWheel) {
             if(unlockMsg) unlockMsg.classList.remove('hidden');
             if(spinBtn) spinBtn.classList.remove('hidden');
-            createConfetti();
+            createConfetti(); // Bắn pháo giấy chúc mừng
         } else {
             if(unlockMsg) unlockMsg.classList.add('hidden');
             if(spinBtn) spinBtn.classList.add('hidden');
         }
         
+        // Lưu dữ liệu
         if (participantData) {
             participantData.score = score;
             participantData.unlocked_wheel = unlockedWheel;
             participantData.rank = rankInfo.label;
             
-            // Tạo chuỗi tóm tắt kỹ năng gửi về sheet
+            // Tạo chuỗi tóm tắt kỹ năng gửi về Google Sheet (bao gồm cả Writing)
             let skillReport = [];
             for (const [cat, data] of Object.entries(skillMetrics)) {
-                 skillReport.push(`${cat}: ${data.current}/${data.total}`);
+                 skillReport.push(`${cat}: ${Math.round(data.current)}/${Math.round(data.total)}`);
             }
             participantData.skill_breakdown = skillReport.join(' | ');
 
@@ -603,8 +704,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showLoading(true);
             try {
+                // Gửi dữ liệu về Google Sheet
                 await sendDataToGoogleSheet(participantData);
                 
+                // Nếu có SDK bên ngoài (tùy chọn)
                 if (window.dataSdk) {
                     await window.dataSdk.create(participantData);
                 }
@@ -615,9 +718,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // Chuyển màn hình sang trang kết quả
         showScreen('results');
     }
-
     // ============================================================
     // --- LUCKY WHEEL & CONFETTI ---
     // ============================================================
@@ -732,6 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('prize-text').textContent = `You won: ${prize.emoji} ${prize.name}`;
         prizeDisplay.classList.remove('hidden');
     }
+ 
 
     function createConfetti() {
         const container = document.getElementById('confetti-container');

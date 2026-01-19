@@ -4,14 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Study Abroad Quiz Campaign</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    sans: ['Poppins', 'sans-serif'], // Đặt Poppins làm font chính cho toàn bộ Tailwind
+                },
+            },
+        }
+    </script>
+
     <script src="/_sdk/element_sdk.js"></script>
     <script src="/_sdk/data_sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
         @view-transition { navigation: auto; }
         
-        body { font-family: 'Poppins', sans-serif; }
+        /* FIX FONT: Ép buộc tất cả các phần tử, kể cả input và button phải dùng Poppins */
+        body, input, button, select, textarea, optgroup, option { 
+            font-family: 'Poppins', sans-serif !important; 
+        }
 
         /* Hiệu ứng nền bóng bẩy */
         .bg-glossy {
@@ -208,14 +224,23 @@
                                 <div class="ml-auto text-gray-300 group-hover:text-blue-500">➜</div>
                             </button>
 
-                            <div class="grid grid-cols-2 gap-3">
-                                <button class="flex flex-col items-center justify-center gap-2 p-3 transition-all border border-gray-100 shadow-sm lang-btn rounded-2xl hover:border-blue-500 hover:bg-blue-50 hover:shadow-md group" data-lang="de">
-                                    <span class="text-3xl">🇩🇪</span> <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600">Tiếng Đức</span>
-                                </button>
-                                <button class="flex flex-col items-center justify-center gap-2 p-3 transition-all border border-gray-100 shadow-sm lang-btn rounded-2xl hover:border-blue-500 hover:bg-blue-50 hover:shadow-md group" data-lang="jp">
-                                    <span class="text-3xl">🇯🇵</span> <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600">Tiếng Nhật</span>
-                                </button>
-                            </div>
+                            <button class="flex items-center w-full gap-4 p-4 transition-all border border-gray-100 shadow-sm lang-btn rounded-2xl hover:border-blue-500 hover:bg-blue-50 hover:shadow-md group" data-lang="de">
+                                <span class="text-3xl">🇩🇪</span> 
+                                <div class="text-left">
+                                    <div class="font-bold text-gray-800 group-hover:text-blue-600">Tiếng Đức</div>
+                                    <div class="text-xs text-gray-400">German Proficiency</div>
+                                </div>
+                                <div class="ml-auto text-gray-300 group-hover:text-blue-500">➜</div>
+                            </button>
+
+                            <button class="flex items-center w-full gap-4 p-4 transition-all border border-gray-100 shadow-sm lang-btn rounded-2xl hover:border-blue-500 hover:bg-blue-50 hover:shadow-md group" data-lang="jp">
+                                <span class="text-3xl">🇯🇵</span> 
+                                <div class="text-left">
+                                    <div class="font-bold text-gray-800 group-hover:text-blue-600">Tiếng Nhật</div>
+                                    <div class="text-xs text-gray-400">Japanese Proficiency</div>
+                                </div>
+                                <div class="ml-auto text-gray-300 group-hover:text-blue-500">➜</div>
+                            </button>
                         </div>
                     </div>
                 </div>

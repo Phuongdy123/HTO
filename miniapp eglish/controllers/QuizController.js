@@ -344,51 +344,64 @@ function renderQuestion() {
             }, 0);
         }
 
-        // B. WRITING (ĐIỀN TỪ) - [ĐÃ NÂNG CẤP]
-        if (q.type === 'writing') {
-            const wrapper = document.createElement('div');
-            wrapper.className = "flex flex-col items-center w-full gap-6 mt-2";
-            
-            // 1. Hiển thị câu hỏi (Thay thế dấu gạch dưới bằng ô trống)
-            const questionText = document.createElement('div');
-            questionText.className = "text-xl font-bold leading-relaxed text-center text-gray-800 md:text-2xl";
-            questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
-            wrapper.appendChild(questionText);
+  
+if (q.type === 'writing') {
+    const wrapper = document.createElement('div');
+    // Đổi thành flex-row để nằm ngang, items-center để căn giữa dọc
+    wrapper.className = "flex flex-row items-center w-full gap-4 mt-4"; 
+    
+    // 1. Hiển thị câu hỏi (Giữ nguyên)
+    const questionTextContainer = document.createElement('div');
+    questionTextContainer.className = "w-full mb-4 text-center"; // Để câu hỏi nằm riêng ở trên
+    const questionText = document.createElement('div');
+    questionText.className = "text-xl font-bold leading-relaxed text-gray-800 md:text-2xl";
+    questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
+    questionTextContainer.appendChild(questionText);
+    
+    // Chèn câu hỏi vào container chính trước (để nó nằm trên cụm input)
+    container.appendChild(questionTextContainer);
 
-            // 2. Ô nhập liệu
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.id = 'writing-input';
-            input.className = "w-full max-w-md p-4 text-xl font-bold text-center placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
-            input.placeholder = "Nhập đáp án của bạn...";
-            input.autocomplete = "off";
-            
-            // 3. Khu vực hiện thông báo Đúng/Sai (Feedback)
-            const feedbackMsg = document.createElement('div');
-            feedbackMsg.id = 'writing-feedback-msg';
-            feedbackMsg.className = "hidden mt-2 text-lg font-bold transition-all"; 
+    // 2. Ô nhập liệu (Thêm flex-1 để nó dài ra chiếm hết chỗ trống)
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'writing-input';
+    // flex-1: tự động dãn dài, text-left: gõ từ trái sang
+    input.className = "flex-1 p-4 text-xl font-bold text-left placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
+    input.placeholder = "Nhập đáp án...";
+    input.autocomplete = "off";
+    
+    // 3. Khu vực hiện thông báo (Sửa để nằm gọn bên phải)
+    const feedbackMsg = document.createElement('div');
+    feedbackMsg.id = 'writing-feedback-msg';
+    // min-w-fit để không bị co lại, whitespace-nowrap để chữ không xuống dòng
+    feedbackMsg.className = "hidden px-4 py-2 text-lg font-bold transition-all min-w-fit rounded-xl whitespace-nowrap"; 
 
-            // Xử lý sự kiện gõ phím
-            input.addEventListener('input', (e) => {
-                if(e.target.value.trim().length > 0) {
-                    enableNextButton(); 
-                } else {
-                    disableNextButton();
-                }
-            });
-
-            // Xử lý phím Enter -> Gọi hàm kiểm tra
-            input.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter' && e.target.value.trim().length > 0) {
-                    checkWritingAnswerAndNext(); // Gọi hàm xử lý mới
-                }
-            });
-
-            wrapper.appendChild(input);
-            wrapper.appendChild(feedbackMsg); // Thêm dòng thông báo vào dưới input
-            container.appendChild(wrapper);
-            return; 
+    // Xử lý sự kiện gõ phím
+    input.addEventListener('input', (e) => {
+        // Chỉ mở nút Next nếu chưa trả lời
+        if (!answered) {
+            if(e.target.value.trim().length > 0) {
+                enableNextButton(); 
+            } else {
+                disableNextButton();
+            }
         }
+    });
+
+    // Xử lý phím Enter
+    input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && e.target.value.trim().length > 0 && !answered) {
+            checkWritingAnswerAndNext();
+        }
+    });
+
+    // Gắn Input và Feedback vào wrapper ngang
+    wrapper.appendChild(input);
+    wrapper.appendChild(feedbackMsg);
+    
+    container.appendChild(wrapper);
+    return; 
+}
 
         // C. MULTIPLE CHOICE
         if (q.options && q.options.length > 0) {
@@ -497,93 +510,95 @@ function renderQuestion() {
     }
 
 async function nextQuestion() {
-        const q = questions[currentQuestion];
+    const q = questions[currentQuestion];
 
-        // --- NẾU LÀ CÂU ĐIỀN TỪ (WRITING) ---
-        if (q.type === 'writing') {
-            // Gọi hàm xử lý riêng (có hiệu ứng delay và hiện đáp án đúng)
+    // --- NẾU LÀ CÂU ĐIỀN TỪ (WRITING) ---
+    if (q.type === 'writing') {
+        // Nếu CHƯA trả lời -> Gọi hàm kiểm tra
+        if (!answered) {
             await checkWritingAnswerAndNext();
-            return; // Dừng tại đây, không chạy code bên dưới nữa
+            return; // Dừng lại, không chuyển câu ngay
         }
-
-        // --- NẾU LÀ CÂU TRẮC NGHIỆM / NGHE (Logic cũ) ---
-        if (currentQuestion < questions.length - 1) {
-            currentQuestion++;
-            renderQuestion();
-        } else {
-            await showResults();
-        }
+        // Nếu ĐÃ trả lời rồi (answered = true) -> Cho phép đi tiếp xuống dưới để chuyển câu
     }
+
+    // --- LOGIC CHUYỂN CÂU (Chung cho cả trắc nghiệm và writing đã xong) ---
+    if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion();
+    } else {
+        await showResults();
+    }
+}
     // Hàm xử lý riêng cho phần Writing: Chấm điểm, hiện đáp án và delay
-    async function checkWritingAnswerAndNext() {
-        if (answered) return; // Chặn người dùng bấm Enter nhiều lần
-        answered = true;
+// Hàm xử lý riêng cho phần Writing
+async function checkWritingAnswerAndNext() {
+    if (answered) return; 
+    answered = true;
 
-        const q = questions[currentQuestion];
-        const inputEl = document.getElementById('writing-input');
-        const feedbackEl = document.getElementById('writing-feedback-msg'); // Element hiển thị thông báo
-        const nextBtn = document.getElementById('next-btn');
+    const q = questions[currentQuestion];
+    const inputEl = document.getElementById('writing-input');
+    const feedbackEl = document.getElementById('writing-feedback-msg');
+    const nextBtn = document.getElementById('next-btn');
+    
+    // 1. Chỉ khóa Input, KHÔNG khóa nút Next nữa
+    inputEl.disabled = true;
+    
+    // Đổi trạng thái nút Next sang "Đang xử lý" tạm thời
+    nextBtn.disabled = true; 
+    document.getElementById('next-btn-text').textContent = 'Đang kiểm tra...';
+
+    const userAns = inputEl.value.trim().toLowerCase();
+    const correctAns = q.correctAnswer ? q.correctAnswer.trim().toLowerCase() : "";
+    const pointsPerQuestion = 100 / questions.length;
+
+    // Lưu log (Giữ nguyên)
+    if (!participantData.writing_responses) participantData.writing_responses = [];
+    participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputEl.value} (Đáp án: ${q.correctAnswer})`);
+
+    // 2. SO SÁNH & HIỂN THỊ (Sửa giao diện Feedback ngang hàng)
+    if (userAns === correctAns) {
+        // --- ĐÚNG ---
+        score += pointsPerQuestion;
+        correctCount++;
         
-        // 1. Khóa không cho sửa đáp án và khóa nút Next
-        inputEl.disabled = true;
-        nextBtn.disabled = true;
-
-        const userAns = inputEl.value.trim().toLowerCase();
-        const correctAns = q.correctAnswer ? q.correctAnswer.trim().toLowerCase() : "";
-        const pointsPerQuestion = 100 / questions.length;
-
-        // Lưu log câu trả lời
-        if (!participantData.writing_responses) participantData.writing_responses = [];
-        participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputEl.value} (Đáp án: ${q.correctAnswer})`);
-
-        // 2. SO SÁNH ĐÁP ÁN
-        if (userAns === correctAns) {
-            // --- TRƯỜNG HỢP ĐÚNG ---
-            score += pointsPerQuestion;
-            correctCount++;
-            
-            // Cộng điểm kỹ năng
-            const cat = q.category ? q.category.toUpperCase() : 'WRITING';
-            if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
-            
-            // Đổi màu xanh
-            inputEl.className = "w-full max-w-md p-4 text-xl font-bold text-center text-green-700 border-2 border-green-500 shadow-inner bg-green-50 rounded-xl";
-            
-            // Hiện thông báo chúc mừng
-            if(feedbackEl) {
-                feedbackEl.innerHTML = "🎉 Chính xác! +Điểm";
-                feedbackEl.className = "block mt-4 text-lg font-bold text-center text-green-600 animate-bounce";
-            }
-        } else {
-            // --- TRƯỜNG HỢP SAI ---
-            // Đổi màu đỏ
-            inputEl.className = "w-full max-w-md p-4 text-xl font-bold text-center text-red-700 border-2 border-red-500 shadow-inner bg-red-50 rounded-xl";
-            
-            // HIỆN ĐÁP ÁN ĐÚNG
-            if(feedbackEl) {
-                feedbackEl.innerHTML = `
-                    <div class="text-red-500 mb-1">❌ Sai rồi!</div>
-                    <div class="text-gray-600 text-sm">Đáp án đúng là:</div>
-                    <div class="text-blue-600 font-black text-2xl uppercase mt-1">${q.correctAnswer}</div>
-                `;
-                feedbackEl.className = "block p-3 mt-4 text-center border border-red-100 rounded-lg bg-red-50";
-            }
+        const cat = q.category ? q.category.toUpperCase() : 'WRITING';
+        if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
+        
+        // Input xanh
+        inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-green-700 border-2 border-green-500 bg-green-50 rounded-xl";
+        
+        // Feedback bên cạnh
+        if(feedbackEl) {
+            feedbackEl.innerHTML = "🎉 Chính xác!";
+            feedbackEl.classList.remove('hidden');
+            feedbackEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
         }
-
-        // Cập nhật điểm số trên giao diện
-        document.getElementById('score-display').textContent = Math.round(score);
-
-        // 3. QUAN TRỌNG: Đợi 2.5 giây (2500ms) để người dùng đọc kết quả
-        await new Promise(r => setTimeout(r, 2500));
-
-        // 4. Tự động chuyển câu tiếp theo
-        if (currentQuestion < questions.length - 1) {
-            currentQuestion++;
-            renderQuestion();
-        } else {
-            await showResults();
+    } else {
+        // --- SAI ---
+        // Input đỏ
+        inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-red-700 border-2 border-red-500 bg-red-50 rounded-xl";
+        
+        // Feedback bên cạnh (Hiện đáp án đúng)
+        if(feedbackEl) {
+            feedbackEl.innerHTML = `❌ Đáp án: ${q.correctAnswer}`;
+            feedbackEl.classList.remove('hidden');
+            feedbackEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
         }
     }
+
+    document.getElementById('score-display').textContent = Math.round(score);
+
+    // 3. QUAN TRỌNG: MỞ KHÓA NÚT "CÂU TIẾP THEO" ĐỂ NGƯỜI DÙNG TỰ BẤM
+    // Bỏ đoạn await new Promise (delay) và bỏ đoạn tự động chuyển câu
+    
+    nextBtn.disabled = false; // Mở khóa nút
+    document.getElementById('next-btn-text').textContent = 'Câu tiếp theo'; // Đổi tên nút
+    document.getElementById('next-btn-icon').textContent = '➡️';
+    
+    // Lúc này biến 'answered' đã là true.
+    // Lần tới người dùng bấm nút Next, nó sẽ lọt vào logic chuyển câu trong hàm nextQuestion.
+}
  async function showResults() {
         // --- 1. LÀM TRÒN ĐIỂM TỔNG KẾT ---
         // Xử lý sai số thập phân (3.333...) để ra số đẹp (0-100)
@@ -605,7 +620,7 @@ async function nextQuestion() {
         const titleEl = document.querySelector('#screen-results h2'); 
         if(titleEl) {
             titleEl.textContent = rankInfo.label;
-            titleEl.className = `mb-1 text-3xl font-black ${rankInfo.color}`;
+            titleEl.className = `mb-1 text-3xl font-black font-sans ${rankInfo.color}`;
         }
         const subTitleEl = document.querySelector('#screen-results p');
         if(subTitleEl) {

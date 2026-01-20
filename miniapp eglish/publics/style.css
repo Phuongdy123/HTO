@@ -1,8 +1,21 @@
 body {
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Be Vietnam Pro', 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+    /* ↑ Be Vietnam Pro ưu tiên đầu, fallback về Inter/Poppins nếu cần */
 }
 
+/* Đặc biệt fix cho label xếp loại (h2 trong #screen-results) */
+#screen-results h2 {
+    font-family: 'Be Vietnam Pro', 'Inter', 'Poppins', sans-serif !important;
+    font-weight: 800;          /* thay font-black bằng weight cụ thể */
+    letter-spacing: -0.02em;   /* giúp dấu nhìn thoáng hơn */
+    line-height: 1.1;          /* tránh dấu bị cắt */
+}
+
+/* Nếu vẫn muốn giữ Poppins cho các phần khác nhưng fix Vietnamese */
+[lang="vi"] {
+    font-family: 'Be Vietnam Pro', 'Inter', sans-serif !important;
+}
 @keyframes float {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-20px) rotate(5deg); }

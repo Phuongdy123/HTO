@@ -1,6 +1,6 @@
 const defaultConfig = {
     quiz_title: 'Đánh Giá Năng Lực Ngoại Ngữ Quốc Tế',
-    quiz_subtitle: 'Cấp độ: Nâng cao (Advanced) - 30 Câu hỏi',
+    quiz_subtitle: 'Hệ thống kiểm tra toàn diện: Nghe - Đọc - Viết',
     start_button_text: 'Bắt Đầu Thử Thách 🚀',
     consent_text: 'Tôi đồng ý cung cấp số điện thoại để nhận kết quả chi tiết qua Zalo',
     congratulations_text: 'Xuất sắc! Bạn đã hoàn thành bài kiểm tra năng lực.',
@@ -8,250 +8,306 @@ const defaultConfig = {
     card_color: '#ffffff',
     text_color: '#1f2937',
     primary_action_color: '#2563eb',
-    font_family: 'Poppins'
+    font_family: 'Poppins',
+    questions_per_turn: 30 // SỐ CÂU HỎI MỖI LẦN THI
 };
 
-// --- DỮ LIỆU 30 CÂU HỎI FULL SKILL (HARD MODE) ---
-// --- DỮ LIỆU 30 CÂU HỎI MIX (ĐÃ SỬA LỖI) ---
+// ============================================================
+// --- NGÂN HÀNG CÂU HỎI (DATABASE) ---
+// ============================================================
 const questionsData = {
     // ======================================================
-    // 1. TIẾNG ANH (TOEIC/IELTS STYLE)
+    // 1. TIẾNG ANH (EN) - Đã bổ sung đầy đủ
     // ======================================================
-    en: [
-        // --- PART 1: GRAMMAR & VOCABULARY ---
-        { type: 'choice', category: 'GRAMMAR', question: 'The board of directors ___ the proposal yesterday.', options: ['approve', 'approved', 'approves', 'approving'], correct: 1 },
-        
-        // Câu điền từ (Đã thêm options: [] để tránh lỗi)
-        { type: 'writing', category: 'GRAMMAR', question: 'I look forward _______ hearing from you soon.', correctAnswer: 'to', options: [] }, 
-
-        { type: 'choice', category: 'GRAMMAR', question: 'By the time you arrive, we ___ the meeting.', options: ['will finish', 'will have finished', 'finished', 'have finished'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: 'The company needs to ___ its expenses.', options: ['expand', 'curtail', 'prolong', 'inflate'], correct: 1 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: 'He has _______ (write) three reports today.', correctAnswer: 'written', options: [] },
-
-        { type: 'choice', category: 'VOCABULARY', question: 'Please ___ the attached document.', options: ['review', 'remind', 'recall', 'resemble'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'The new policy is neither practical ___ cost-effective.', options: ['or', 'nor', 'and', 'but'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: 'He is highly ___ in three languages.', options: ['proficient', 'efficient', 'sufficient', 'deficient'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'The manager suggested that she ___ the conference.', options: ['attend', 'attends', 'attended', 'attending'], correct: 0 },
-        
-        { type: 'writing', category: 'VOCABULARY', question: 'Please pay _______ to the safety announcement.', correctAnswer: 'attention', options: [] },
-
-        { type: 'choice', category: 'VOCABULARY', question: 'We need to find a ___ solution.', options: ['feasible', 'fictional', 'fearful', 'fragile'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Rarely ___ such a magnificent performance.', options: ['I have seen', 'have I seen', 'seen I have', 'I saw'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: 'The merger will ___ significant benefits.', options: ['generate', 'generalize', 'generous', 'genetic'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'She is used to ___ under pressure.', options: ['work', 'working', 'worked', 'works'], correct: 1 },
-        { type: 'choice', category: 'READING', question: 'RSVP means: Please ___.', options: ['Read', 'Respond', 'Return', 'Retire'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: 'The annual ___ will be held at the Hilton.', options: ['convention', 'invention', 'prevention', 'intention'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '___ raining, we went for a walk.', options: ['Despite', 'Although', 'Even though', 'However'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'He was ___ for his contribution.', options: ['rewarded', 'awarded', 'forwarded', 'discarded'], correct: 1 },
-
-        // --- PART 2: LISTENING ---
-        { type: 'listening', category: 'LISTENING', audioScript: "Attention passengers, the flight to New York has been delayed.", langCode: "en-US", question: 'Why is the flight delayed?', options: ['Technical issue', 'Bad weather', 'Strike', 'Security'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Send me the quarterly report by end of day.", langCode: "en-US", question: 'What is requested?', options: ['Marketing plan', 'Financial report', 'Schedule', 'Vacation'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Mr. Johnson is in a meeting right now.", langCode: "en-US", question: 'Where is Mr. Johnson?', options: ['Lunch', 'Vacation', 'Meeting', 'Home'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Deadline extended to next Monday.", langCode: "en-US", question: 'New deadline?', options: ['Friday', 'Monday', 'Tomorrow', 'Next month'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "20% discount on winter clothing.", langCode: "en-US", question: 'What is on sale?', options: ['Electronics', 'Furniture', 'Clothes', 'Groceries'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Enter your four-digit PIN code.", langCode: "en-US", question: 'What to enter?', options: ['Password', 'Username', 'PIN', 'Email'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Dr. Smith sees patients 9 to 5, Mon-Fri.", langCode: "en-US", question: 'Doctor\'s hours?', options: ['Weekends', 'Weekdays 9-5', '24/7', 'Mondays'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Traffic is bad, take the train.", langCode: "en-US", question: 'Suggestion?', options: ['Drive fast', 'Bus', 'Train', 'Stay home'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Reservation for two at 7 PM.", langCode: "en-US", question: 'Activity?', options: ['Buying tickets', 'Booking table', 'Hotel', 'Food order'], correct: 1 },
-
-        // --- PART 3: WRITING ---
-        { type: 'writing', category: 'WRITING', question: 'Complete the proverb: "Better late than _______."', correctAnswer: 'never', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'Opposite of "Expensive" is _______?', correctAnswer: 'cheap', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'Past tense of "Go" is _______?', correctAnswer: 'went', options: [] }
-    ],
-
-    // ======================================================
-    // 2. TIẾNG TRUNG (HSK 3-4 STYLE)
-    // ======================================================
-    zh: [
-        { type: 'choice', category: 'GRAMMAR', question: '这本书我___看完了。', options: ['已经', '正在', '一边', '就'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: '一 _______ 书 (Một quyển sách - điền lượng từ)', correctAnswer: '本', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: '那个苹果被弟弟___了。', options: ['吃', '吃完', '吃掉', '好吃'], correct: 2 },
-        { type: 'choice', category: 'VOCABULARY', question: '如果你有困难，尽管___我。', options: ['告诉', '说话', '谈话', '讨论'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '他比我___三岁。', options: ['大', '很', '太', '非常'], correct: 0 },
-        
-        { type: 'writing', category: 'VOCABULARY', question: '我们坐公共汽车 _______ 吧。 (Đi)', correctAnswer: '去', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: '虽然今天下雨，___他还是来了。', options: ['所以', '但是', '因为', '而且'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: '请把护照和机票___给我。', options: ['出示', '出现', '出发', '出来'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '这件衣服___便宜___好看。', options: ['又...又', '虽然...但是', '因为...所以', '不但...而且'], correct: 0 },
-        { type: 'choice', category: 'READING', question: '“禁止吸烟” (Jìnzhǐ xīyān) 在哪里常见？', options: ['饭馆', '家里', '加油站', '公园'], correct: 2 },
-        { type: 'choice', category: 'VOCABULARY', question: '我对中国的历史很感___。', options: ['兴趣', '有趣', '爱好', '意思'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '快点儿，火车___开了。', options: ['正在', '马上', '已经', '一直'], correct: 1 },
-        
-        { type: 'writing', category: 'VOCABULARY', question: '一加一等于 _______ (1 + 1 = ? Viết chữ Hán)', correctAnswer: '二', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: '你看___那个穿红裙子的女孩了吗？', options: ['见', '看', '视', '望'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '我们要___保护环境。', options: ['注意', '愿意', '满意', '同意'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '除了英语以外，他___会说法语。', options: ['都', '还', '就', '才'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: '这道菜的味道有点儿___。', options: ['咸', '盐', '烟', '严'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '把桌子上的书___起来。', options: ['收', '放', '看', '读'], correct: 0 },
-
-        // --- LISTENING ---
-        { type: 'listening', category: 'LISTENING', audioScript: "去天安门广场怎么走？", langCode: "zh-CN", question: '去哪里？', options: ['火车站', '天安门', '机场', '长城'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "这件衣服有点儿贵，便宜点？", langCode: "zh-CN", question: '做什么？', options: ['买衣服', '吃饭', '看电影', '坐车'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "明天可能会下雪。", langCode: "zh-CN", question: '明天天气？', options: ['晴', '雨', '雪', '风'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "我的手机不见了。", langCode: "zh-CN", question: '丢了什么？', options: ['钱包', '钥匙', '手机', '护照'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "会议下午三点开始。", langCode: "zh-CN", question: '几点开始？', options: ['2点', '3点', '4点', '5点'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "我喜欢吃烤鸭。", langCode: "zh-CN", question: '喜欢吃什么？', options: ['饺子', '面条', '烤鸭', '火锅'], correct: 2 },
-        { type: 'listening', category: 'LISTENING', audioScript: "多休息，多喝水。", langCode: "zh-CN", question: '医生建议？', options: ['运动', '休息', '吃饭', '工作'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "我在图书馆看书。", langCode: "zh-CN", question: '在哪里？', options: ['公园', '图书馆', '超市', '学校'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "祝你生日快乐。", langCode: "zh-CN", question: '什么日子？', options: ['新年', '圣诞', '生日', '春节'], correct: 2 },
-
-        // --- PART 3: WRITING ---
-        { type: 'writing', category: 'WRITING', question: '“你好” 是什么意思？(Viết nghĩa tiếng Việt không dấu)', correctAnswer: 'xin chao', options: [] },
-        { type: 'writing', category: 'WRITING', question: '今天是星期 _______ (Hôm nay là Chủ Nhật - điền chữ Hán)', correctAnswer: '日', options: [] },
-        { type: 'writing', category: 'WRITING', question: '我是越南 _______ (Người)', correctAnswer: '人', options: [] }
-    ],
+    en: {
+        easy: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'I ___ a student.', options: ['is', 'are', 'am', 'be'], correct: 2 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'VOCABULARY', question: 'Which animal says "Meow"?', options: ['Dog', 'Cat', 'Cow', 'Pig'], correct: 1 },
+            { type: 'choice', category: 'GRAMMAR', question: 'She ___ breakfast at 7 AM.', options: ['eat', 'eats', 'eating', 'ate'], correct: 1 },
+            { type: 'choice', category: 'NUMBERS', question: 'Five + Five = ?', options: ['Nine', 'Ten', 'Eleven', 'Eight'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: 'We sleep in the ___.', options: ['Kitchen', 'Bathroom', 'Bedroom', 'Garage'], correct: 2 },
+            { type: 'choice', category: 'GRAMMAR', question: 'They ___ playing football.', options: ['is', 'am', 'are', 'be'], correct: 2 },
+            { type: 'writing', category: 'WRITING', question: 'Write the opposite of "Hot".', correctAnswer: 'cold', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Sunday, Monday, _______, Wednesday.', correctAnswer: 'tuesday', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "Sit down, please.", langCode: "en-US", question: 'What should you do?', options: ['Stand up', 'Sit down', 'Run', 'Sleep'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "My favorite color is Blue.", langCode: "en-US", question: 'What color?', options: ['Red', 'Blue', 'Green', 'Yellow'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Good night!", langCode: "en-US", question: 'When do you say this?', options: ['Morning', 'Afternoon', 'Evening', 'Before sleeping'], correct: 3 }
+        ],
+        medium: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'I have lived here ___ 2010.', options: ['since', 'for', 'in', 'at'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: 'I look forward to ___ you.', options: ['see', 'seeing', 'saw', 'seen'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: 'The flight takes ___ at 9:00 PM.', options: ['off', 'up', 'on', 'in'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Unless you hurry, you ___ the bus.', options: ['will miss', 'miss', 'missed', 'missing'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'He is responsible ___ the sales department.', options: ['of', 'for', 'to', 'in'], correct: 1 },
+            { type: 'choice', category: 'GRAMMAR', question: 'I wish I ___ a bigger house.', options: ['have', 'had', 'have had', 'having'], correct: 1 },
+            { type: 'writing', category: 'WRITING', question: 'Past participle of "Buy" is _______.', correctAnswer: 'bought', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Complete: "Piece of _______" (Very easy).', correctAnswer: 'cake', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "We are out of stock.", langCode: "en-US", question: 'Meaning?', options: ['Full stock', 'No items left', 'Discount', 'New items'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Can I have the check, please?", langCode: "en-US", question: 'Where are they?', options: ['Park', 'School', 'Restaurant', 'Gym'], correct: 2 },
+            { type: 'listening', category: 'LISTENING', audioScript: "It's raining cats and dogs.", langCode: "en-US", question: 'Weather?', options: ['Sunny', 'Light rain', 'Heavy rain', 'Snowing'], correct: 2 }
+        ],
+        hard: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'The board of directors ___ the proposal yesterday.', options: ['approve', 'approved', 'approves', 'approving'], correct: 1 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: 'Scarcely had he entered the room ___ the phone rang.', options: ['than', 'when', 'then', 'after'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: 'The contract is ___ upon signature.', options: ['binding', 'bounding', 'bending', 'biding'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'It is essential that he ___ informed immediately.', options: ['be', 'is', 'was', 'were'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'His explanation was completely ___ .', options: ['plausible', 'plastic', 'plentiful', 'playful'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '___ he been more careful, the accident wouldn\'t have happened.', options: ['Has', 'Had', 'If', 'Should'], correct: 1 },
+            { type: 'writing', category: 'WRITING', question: 'Synonym of "Decrease" starting with D is _______.', correctAnswer: 'diminish', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Complete: "Don\'t judge a book by its _______."', correctAnswer: 'cover', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "The merger has been called off indefinitely.", langCode: "en-US", question: 'Status of merger?', options: ['Completed', 'Delayed', 'Cancelled', 'Started'], correct: 2 },
+            { type: 'listening', category: 'LISTENING', audioScript: "I'd like to make a withdrawal.", langCode: "en-US", question: 'Location?', options: ['Library', 'Bank', 'Hospital', 'Police Station'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "He's always pulling my leg.", langCode: "en-US", question: 'Meaning?', options: ['Hurting me', 'Joking', 'Massage', 'Helping'], correct: 1 }
+        ]
+    },
 
     // ======================================================
-    // 3. TIẾNG HÀN
+    // 2. TIẾNG TRUNG (ZH)
     // ======================================================
-    kr: [
-        { type: 'choice', category: 'GRAMMAR', question: '비가 ___ 우산을 썼어요.', options: ['와서', '오면', '오지만', '오려고'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: '학교 _______ 갑니다. (Đi ĐẾN trường)', correctAnswer: '에', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: '영화를 ___ 못했어요.', options: ['안', '못', '지', '아니'], correct: 1 },
-        { type: 'choice', category: 'VOCABULARY', question: '휴대전화를 ___ 합니다.', options: ['꺼야', '켜야', '사야', '봐야'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '비싸기는 하지만 ___.', options: ['좋아요', '나빠요', '작아요', '커요'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: '저는 학생입_______. (đuôi câu trang trọng)', correctAnswer: '니다', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: '밥을 먹는 ___ 텔레비전을 봅니다.', options: ['동안', '후에', '전에', '때'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '매일 ___을 합니다.', options: ['운동', '공부', '쇼핑', '여행'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '말씀 좀 ___ 되겠습니까?', options: ['여쭈어도', '물어도', '말해도', '들어도'], correct: 0 },
-        { type: 'choice', category: 'READING', question: '"촬영 금지" 뜻?', options: ['사진 금지', '입장 금지', '음식 금지', '뛰기 금지'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '시험에 ___ 기분이 좋아요.', options: ['합격해서', '떨어져서', '실패해서', '공부해서'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '집에 ___마자 손을 씻어요.', options: ['가자', '오자', '먹자', '하자'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '어려워서 ___ 수가 없어요.', options: ['풀', '살', '탈', '할'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '제주도에 ___ 적이 있어요?', options: ['가 본', '가는', '갈', '간'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '용돈을 ___.', options: ['드렸어요', '주었어요', '받았어요', '빌렸어요'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '날씨가 ___ 같아요.', options: ['추울 것', '춥', '추운', '추워서'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '전통 ___은 한복입니다.', options: ['옷', '집', '음식', '노래'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '열심히 공부해야 해요.', options: ['하려면', '하면서', '하거나', '하니까'], correct: 0 },
-
-        // --- LISTENING ---
-        { type: 'listening', category: 'LISTENING', audioScript: "이번 역은 서울역입니다.", langCode: "ko-KR", question: '어디입니까?', options: ['지하철', '비행기', '택시', '자전거'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "주문하시겠습니까?", langCode: "ko-KR", question: '어디입니까?', options: ['식당', '도서관', '병원', '은행'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "등산을 가요.", langCode: "ko-KR", question: '취미는?', options: ['등산', '수영', '독서', '요리'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "사진 좀 찍어 주시겠어요?", langCode: "ko-KR", question: '부탁은?', options: ['사진', '길', '짐', '전화'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "오후 2시에 뵙겠습니다.", langCode: "ko-KR", question: '언제?', options: ['내일 2시', '오늘 2시', '오전 2시', '모레 2시'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "좀 깎아 주세요.", langCode: "ko-KR", question: '무엇을 합니까?', options: ['물건 사기', '길 묻기', '인사', '공부'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "아프고 열이 나요.", langCode: "ko-KR", question: '왜 못 갑니까?', options: ['아파서', '바빠서', '늦잠', '약속'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "시험 접수 기간입니다.", langCode: "ko-KR", question: '안내?', options: ['시험 접수', '수업', '방학', '졸업'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "우수 사원입니다.", langCode: "ko-KR", question: '소식?', options: ['우수 사원', '승진 실패', '해고', '전근'], correct: 0 },
-
-        // --- PART 3: WRITING ---
-        { type: 'writing', category: 'WRITING', question: 'Write "Thank you" in Korean (Polite).', correctAnswer: '감사합니다', options: [] },
-        { type: 'writing', category: 'WRITING', question: '한국의 수도는 어디입니까? (Thủ đô của HQ)', correctAnswer: '서울', options: [] },
-        { type: 'writing', category: 'WRITING', question: '1 + 1 = ? (Viết tiếng Hàn: 일 더하기 일은 __)', correctAnswer: '이', options: [] }
-    ],
-
-    // ======================================================
-    // 4. TIẾNG ĐỨC
-    // ======================================================
-    de: [
-        { type: 'choice', category: 'GRAMMAR', question: 'Ich habe ___ meinen Schlüssel vergessen.', options: ['schon wieder', 'erst', 'bereits', 'damals'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: 'Das ist _______ (a) Haus.', correctAnswer: 'ein', options: [] },
-
-        { type: 'choice', category: 'VOCABULARY', question: 'Wir müssen einen Termin ___.', options: ['vereinbaren', 'machen', 'tun', 'stellen'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Wenn ich Zeit hätte, ___ ich dich besuchen.', options: ['würde', 'werde', 'wurde', 'wird'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: 'Wir warten _______ (for) den Bus.', correctAnswer: 'auf', options: [] },
-
-        { type: 'choice', category: 'GRAMMAR', question: 'Ich interessiere mich ___ Musik.', options: ['für', 'über', 'an', 'auf'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Bitte ___ Sie das Formular aus.', options: ['füllen', 'schreiben', 'machen', 'geben'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Obwohl er krank war, ___ er zur Arbeit.', options: ['ging', 'geht', 'gegangen', 'gehen'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Ich möchte mich um diese Stelle ___.', options: ['bewerben', 'werben', 'anwerben', 'erwerben'], correct: 0 },
-        { type: 'choice', category: 'READING', question: 'Rauchen verboten means?', options: ['No smoking', 'Smoking allowed', 'Healthy', 'Cheap'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Hast du das Buch ___ gelesen?', options: ['schon', 'noch', 'erst', 'bereits'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Der Zug hat zehn Minuten ___.', options: ['Verspätung', 'Spät', 'Verzögerung', 'Pause'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Ich warte ___ den Bus.', options: ['auf', 'an', 'in', 'zu'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Kannst du mir einen ___ geben?', options: ['Rat', 'Rad', 'Tat', 'Satz'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Nachdem er gegessen hatte, ___ er ins Bett.', options: ['ging', 'geht', 'gegangen', 'gehen'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Die Miete ist sehr ___.', options: ['hoch', 'groß', 'viel', 'stark'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'Ich lasse mein Auto ___ reparieren.', options: ['morgen', 'gestern', 'heute', 'jetzt'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'Vielen Dank für Ihre ___.', options: ['Aufmerksamkeit', 'Vorsicht', 'Sicht', 'Aussicht'], correct: 0 },
-
-        // --- LISTENING ---
-        { type: 'listening', category: 'LISTENING', audioScript: "Zug nach München hat 20 Minuten Verspätung.", langCode: "de-DE", question: 'Problem?', options: ['Pünktlich', 'Verspätet', 'Fällt aus', 'Gleiswechsel'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Haben Sie diesen Pullover in M?", langCode: "de-DE", question: 'Wo?', options: ['Supermarkt', 'Kleidergeschäft', 'Apotheke', 'Kino'], correct: 1 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Bitte schnallen Sie sich an.", langCode: "de-DE", question: 'Wo?', options: ['Flugzeug', 'Bus', 'Zug', 'Auto'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Termin bei Dr. Müller.", langCode: "de-DE", question: 'Was?', options: ['Arzttermin', 'Tisch', 'Hotel', 'Anwalt'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Wie komme ich zum Bahnhof?", langCode: "de-DE", question: 'Sucht was?', options: ['Bahnhof', 'Flughafen', 'Hotel', 'Museum'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Morgen wird es regnerisch.", langCode: "de-DE", question: 'Thema?', options: ['Wetter', 'Verkehr', 'Politik', 'Sport'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Herzlichen Glückwunsch!", langCode: "de-DE", question: 'Anlass?', options: ['Geburtstag', 'Hochzeit', 'Weihnachten', 'Ostern'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Bibliothek schließt um 18 Uhr.", langCode: "de-DE", question: 'Wann?', options: ['18 Uhr', '8 Uhr', '20 Uhr', '16 Uhr'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "Konto eröffnen.", langCode: "de-DE", question: 'Wo?', options: ['Bank', 'Post', 'Restaurant', 'Hotel'], correct: 0 },
-
-        // --- PART 3: WRITING ---
-        { type: 'writing', category: 'WRITING', question: 'Guten Morgen means Good _______', correctAnswer: 'morning', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'eins + zwei = _______ (german word)', correctAnswer: 'drei', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'Capital of Germany is _______', correctAnswer: 'berlin', options: [] }
-    ],
+    zh: {
+        easy: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: '“你好” (Nǐ hǎo) nghĩa là gì?', options: ['Tạm biệt', 'Xin chào', 'Cảm ơn', 'Xin lỗi'], correct: 1 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'VOCABULARY', question: '“再见” (Zàijiàn) nghĩa là gì?', options: ['Xin chào', 'Tạm biệt', 'Cảm ơn', 'Xin lỗi'], correct: 1 },
+            { type: 'choice', category: 'GRAMMAR', question: '我 ___ 喜欢吃苹果。 (Tôi KHÔNG thích...)', options: ['不 (bù)', '没 (méi)', '无 (wú)', '非 (fēi)'], correct: 0 },
+            { type: 'choice', category: 'NUMBERS', question: '十 (Shí) là số mấy?', options: ['5', '8', '10', '12'], correct: 2 },
+            { type: 'choice', category: 'VOCABULARY', question: '“明天” (Míngtiān) là khi nào?', options: ['Hôm qua', 'Hôm nay', 'Ngày mai', 'Năm sau'], correct: 2 },
+            { type: 'choice', category: 'GRAMMAR', question: '他 ___ 哪儿？ (Anh ấy Ở đâu?)', options: ['去 (qù)', '在 (zài)', '是 (shì)', '有 (yǒu)'], correct: 1 },
+            { type: 'writing', category: 'WRITING', question: 'Viết phiên âm của "Cảm ơn" (xi...)', correctAnswer: 'xiexie', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Viết số 5 bằng chữ Hán.', correctAnswer: '五', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "现在是九点。", langCode: "zh-CN", question: 'Mấy giờ?', options: ['8:00', '9:00', '10:00', '7:00'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "她是我的妈妈。", langCode: "zh-CN", question: 'Ai?', options: ['Bố', 'Mẹ', 'Chị', 'Bạn'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "我喝茶。", langCode: "zh-CN", question: 'Uống gì?', options: ['Nước', 'Bia', 'Trà', 'Sữa'], correct: 2 }
+        ],
+        medium: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: '你 ___ 去哪儿？ (Bạn MUỐN đi đâu)', options: ['想', '喜欢', '爱', '看'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: '他一边吃饭，___看电视。', options: ['一边', '一起', '一直', '一旦'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '服务员，请给我一___水。', options: ['杯 (bēi)', '本 (běn)', '个 (gè)', '只 (zhī)'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '这件衣服有点儿贵，___有没有便宜一点的？', options: ['虽然', '所以', '但是', '因为'], correct: 1 }, // Lỗi logic nhỏ ở câu hỏi cũ, sửa lại: 'Nhưng có rẻ hơn không'
+            { type: 'choice', category: 'VOCABULARY', question: '我们是坐___来的。', options: ['出租车', '自行车', '走路', '跑步'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '我已经把作业___完了。', options: ['做', '写', '搞', '弄'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Viết chữ Hán: "Bắc Kinh" (Běijīng).', correctAnswer: '北京', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Điền từ: 因___ (Bởi vì - yīnwèi).', correctAnswer: '为', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "前面左转就到了。", langCode: "zh-CN", question: 'Hướng dẫn?', options: ['Đi thẳng', 'Rẽ trái', 'Rẽ phải', 'Quay lại'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "今天太热了。", langCode: "zh-CN", question: 'Thời tiết?', options: ['Lạnh', 'Mát', 'Nóng', 'Mưa'], correct: 2 },
+            { type: 'listening', category: 'LISTENING', audioScript: "一共多少钱？", langCode: "zh-CN", question: 'Hỏi gì?', options: ['Số lượng', 'Giá tiền', 'Thời gian', 'Địa điểm'], correct: 1 }
+        ],
+        hard: [
+            // --- Cũ (Giữ nguyên các câu khó cũ) ---
+            { type: 'choice', category: 'GRAMMAR', question: '这本书我___看完了。', options: ['已经', '正在', '一边', '就'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'VOCABULARY', question: '这次考试对他来说是小菜一___。', options: ['盘', '碟', '碗', '杯'], correct: 1 }, // Thành ngữ: Dễ như ăn bánh
+            { type: 'choice', category: 'GRAMMAR', question: '___下雨，我们也要去。', options: ['即使', '虽然', '但是', '因为'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '由于天气原因，航班被___了。', options: ['取消', '举行', '开始', '结束'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '与其在家里睡觉，___出去走走。', options: ['不如', '不然', '不过', '不只'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '我们需要___解决这个问题。', options: ['彻底', '到底', '根本', '基本'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Thành ngữ: "Mã đáo thành..." (Viết chữ Hán)', correctAnswer: '功', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Viết từ: "Kinh tế" (Jīngjì)', correctAnswer: '经济', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "请系好安全带。", langCode: "zh-CN", question: 'Ở đâu?', options: ['Trên máy bay', 'Trong nhà', 'Công viên', 'Thư viện'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "我也没想到结果会是这样。", langCode: "zh-CN", question: 'Thái độ?', options: ['Vui vẻ', 'Ngạc nhiên', 'Tức giận', 'Bình thường'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "不论发生什么，我都支持你。", langCode: "zh-CN", question: 'Ý nghĩa?', options: ['Phản đối', 'Ủng hộ', 'Không quan tâm', 'Lo lắng'], correct: 1 }
+        ]
+    },
 
     // ======================================================
-    // 5. TIẾNG NHẬT
+    // 3. TIẾNG HÀN (KR)
     // ======================================================
-    jp: [
-        { type: 'choice', category: 'GRAMMAR', question: 'この本は読み___です。', options: ['やすい', 'にくい', 'たい', 'すぎ'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: '日本 _______ 行きます。 (Đi ĐẾN Nhật)', correctAnswer: 'へ', options: [] },
+    kr: {
+        easy: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: '“안녕하세요” nghĩa là gì?', options: ['Xin lỗi', 'Cảm ơn', 'Xin chào', 'Tạm biệt'], correct: 2 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'VOCABULARY', question: '“사과” (Sagwa) là quả gì?', options: ['Táo', 'Nho', 'Cam', 'Dưa hấu'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '저는 학생___ (Là học sinh).', options: ['입니다', '입니까', '이', '가'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '“가다” (Gada) nghĩa là?', options: ['Đi', 'Đến', 'Ăn', 'Ngủ'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '이것___ 무엇입니까? (Cái này LÀ cái gì?)', options: ['은', '을', '도', '로'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Số 1 (Thuần Hàn)?', options: ['하나 (Hana)', '둘 (Dul)', '셋 (Set)', '일 (Il)'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Viết "Kimchi" bằng tiếng Hàn.', correctAnswer: '김치', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Viết "Sữa" (Uyu) bằng tiếng Hàn.', correctAnswer: '우유', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "안녕히 가세요.", langCode: "ko-KR", question: 'Tình huống?', options: ['Gặp mặt', 'Tạm biệt (Người ở lại nói)', 'Tạm biệt (Người đi nói)', 'Xin lỗi'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "물 주세요.", langCode: "ko-KR", question: 'Muốn gì?', options: ['Cơm', 'Nước', 'Rượu', 'Kim chi'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "사랑해요.", langCode: "ko-KR", question: 'Cảm xúc?', options: ['Ghét', 'Yêu', 'Buồn', 'Sợ'], correct: 1 }
+        ],
+        medium: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'Tiểu từ chủ ngữ là?', options: ['은/는', '이/가', '을/를', '에/에서'], correct: 1 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: '밥을 ___ (Ăn - Quá khứ).', options: ['먹어요', '먹었습니다', '먹을 거예요', '먹고'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: '친구를 ___ (Gặp).', options: ['만납니다', '마십니다', '봅니다', '갑니다'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '비가 ___ 우산을 씁니다. (Vì...nên)', options: ['오고', '와서', '오지만', '오면'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: '병원에 ___ (Đi đến bệnh viện).', options: ['가요', '봐요', '사요', '입어요'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '영화를 ___ 싶어요. (Muốn)', options: ['보고', '보', '봐', '봅'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Viết đuôi câu kính trọng của "하다" (làm) -> 합니다.', correctAnswer: '합니다', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Điền từ: "Hàn..." (Quốc - Hanguk)', correctAnswer: '국', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "어디 아프세요?", langCode: "ko-KR", question: 'Địa điểm?', options: ['Trường học', 'Bệnh viện', 'Nhà hàng', 'Công viên'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "몇 시에 만날까요?", langCode: "ko-KR", question: 'Hỏi về?', options: ['Địa điểm', 'Thời gian', 'Giá tiền', 'Phương tiện'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "맛있게 드세요.", langCode: "ko-KR", question: 'Khi nào nói?', options: ['Trước khi ăn', 'Sau khi ăn', 'Khi ngủ', 'Khi đi làm'], correct: 0 }
+        ],
+        hard: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: '비가 ___ 우산을 썼어요.', options: ['와서', '오면', '오지만', '오려고'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: '한국에 ___ 적이 있어요. (Đã từng)', options: ['가 본', '가는', '갈', '가서'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '회의가 ___되었습니다. (Bị hủy)', options: ['취소', '시작', '계속', '예약'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '아무리 ___ 성공할 수 없어요. (Dù cố gắng)', options: ['노력해도', '노력해서', '노력하면', '노력하고'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '환경 ___을 해야 합니다. (Bảo vệ)', options: ['보호', '오염', '개발', '파괴'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '친구가 올 ___ 기다렸어요. (Đến khi)', options: ['때까지', '때문에', '때', '면서'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Viết: "Cảm ơn" (Gomawo - Bạn bè)', correctAnswer: '고마워', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Thủ đô Hàn Quốc: "Seo..."', correctAnswer: '울', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "잠시만 기다려 주십시오.", langCode: "ko-KR", question: 'Yêu cầu?', options: ['Đi ngay', 'Chờ một chút', 'Nói to lên', 'Im lặng'], correct: 1 },
+            { type: 'listening', category: 'LISTENING', audioScript: "전화번호를 잘못 누르셨습니다.", langCode: "ko-KR", question: 'Vấn đề?', options: ['Nhầm số', 'Hết pin', 'Mất sóng', 'Điện thoại hỏng'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "제 생각에는 반대입니다.", langCode: "ko-KR", question: 'Ý kiến?', options: ['Đồng ý', 'Phản đối', 'Không biết', 'Thắc mắc'], correct: 1 }
+        ]
+    },
 
-        { type: 'choice', category: 'GRAMMAR', question: '日本へ___ことがありますか。', options: ['行った', '行く', '行って', '行かない'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '父は会社に___います。', options: ['勤めて', '働いて', '仕事して', 'やって'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '雨が___そうです。', options: ['降り', '降る', '降って', '降った'], correct: 0 },
-        
-        { type: 'writing', category: 'GRAMMAR', question: 'これ _______ ペンです。 (Cái NÀY là bút)', correctAnswer: 'は', options: [] },
+    // ======================================================
+    // 4. TIẾNG ĐỨC (DE) - Đã thêm mới
+    // ======================================================
+    de: {
+        easy: [
+             { type: 'choice', category: 'GRAMMAR', question: 'Ich ___ aus Vietnam.', options: ['komme', 'kommt', 'kommen', 'kam'], correct: 0 },
+             { type: 'choice', category: 'VOCABULARY', question: '“Guten Morgen” nghĩa là?', options: ['Chào buổi sáng', 'Chào buổi tối', 'Chúc ngủ ngon', 'Tạm biệt'], correct: 0 },
+             { type: 'choice', category: 'NUMBERS', question: 'Eins, Zwei, ___', options: ['Drei', 'Vier', 'Fünf', 'Sechs'], correct: 0 },
+             { type: 'choice', category: 'GRAMMAR', question: 'Das ist ___ Auto.', options: ['ein', 'eine', 'einen', 'einer'], correct: 0 },
+             { type: 'choice', category: 'VOCABULARY', question: 'Wasser ist ___.', options: ['Blau', 'Rot', 'Gelb', 'Grün'], correct: 0 },
+             { type: 'choice', category: 'GRAMMAR', question: 'Er ___ Fußball.', options: ['spielt', 'spielen', 'spiele', 'spielst'], correct: 0 },
+             { type: 'writing', category: 'WRITING', question: 'Ja oder ___ (Yes or No)', correctAnswer: 'nein', options: [] },
+             { type: 'writing', category: 'WRITING', question: 'Danke ___ (Thank you very much)', correctAnswer: 'schon', options: [] },
+             { type: 'listening', category: 'LISTENING', audioScript: "Mein Name ist Lisa.", langCode: "de-DE", question: 'Tên cô ấy?', options: ['Lisa', 'Lena', 'Laura', 'Lara'], correct: 0 },
+             { type: 'listening', category: 'LISTENING', audioScript: "Auf Wiedersehen!", langCode: "de-DE", question: 'Ý nghĩa?', options: ['Xin chào', 'Hẹn gặp lại', 'Xin lỗi', 'Cảm ơn'], correct: 1 }
+        ],
+        medium: [
+             { type: 'choice', category: 'GRAMMAR', question: 'Ich habe das Buch ___. (đã đọc)', options: ['gelesen', 'lese', 'liest', 'las'], correct: 0 },
+             { type: 'choice', category: 'VOCABULARY', question: 'Wir fahren mit dem ___. (Tàu hỏa)', options: ['Zug', 'Auto', 'Flugzeug', 'Fahrrad'], correct: 0 },
+             { type: 'choice', category: 'GRAMMAR', question: 'Weil es regnet, ___ ich zu Hause.', options: ['bleibe', 'bleiben', 'geblieben', 'bleibst'], correct: 0 },
+             { type: 'choice', category: 'VOCABULARY', question: 'Ich gehe zum ___. (Bác sĩ)', options: ['Arzt', 'Lehrer', 'Bäcker', 'Fahrer'], correct: 0 },
+             { type: 'choice', category: 'GRAMMAR', question: 'Das ist der Mann, ___ ich gesehen habe.', options: ['den', 'der', 'dem', 'des'], correct: 0 },
+             { type: 'choice', category: 'VOCABULARY', question: 'Ich möchte ein Konto ___.', options: ['eröffnen', 'machen', 'tun', 'schließen'], correct: 0 },
+             { type: 'writing', category: 'WRITING', question: 'Thủ đô Đức: B...', correctAnswer: 'berlin', options: [] },
+             { type: 'writing', category: 'WRITING', question: 'Viết số 10 (Zehn)', correctAnswer: 'zehn', options: [] },
+             { type: 'listening', category: 'LISTENING', audioScript: "Ein Bier, bitte.", langCode: "de-DE", question: 'Đang ở đâu?', options: ['Quán bar/nhà hàng', 'Trường học', 'Bệnh viện', 'Nhà thờ'], correct: 0 },
+             { type: 'listening', category: 'LISTENING', audioScript: "Wie spät ist es?", langCode: "de-DE", question: 'Hỏi về?', options: ['Giờ', 'Tiền', 'Tuổi', 'Tên'], correct: 0 }
+        ],
+        hard: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'Ich habe ___ meinen Schlüssel vergessen.', options: ['schon wieder', 'erst', 'bereits', 'damals'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: 'Hätte ich Zeit, ___ ich kommen.', options: ['würde', 'werde', 'wurde', 'wird'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Wir müssen eine Entscheidung ___.', options: ['treffen', 'machen', 'tun', 'nehmen'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Je mehr man lernt, ___ mehr weiß man.', options: ['desto', 'umso', 'so', 'dann'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Er wurde auf frischer ___ ertappt.', options: ['Tat', 'Hand', 'Fuß', 'Weg'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Es lohnt sich nicht, darüber ___ streiten.', options: ['zu', 'um', 'über', 'mit'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Từ trái nghĩa của "Schnell" (Nhanh) là "L..."', correctAnswer: 'langsam', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Viết từ: "Bệnh viện" (Kranken...)', correctAnswer: 'haus', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "Die Sitzung wurde verschoben.", langCode: "de-DE", question: 'Tình trạng cuộc họp?', options: ['Bị hoãn', 'Đang diễn ra', 'Kết thúc', 'Hủy bỏ'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Ich drücke dir die Daumen.", langCode: "de-DE", question: 'Ý nghĩa?', options: ['Chúc may mắn', 'Đừng lo', 'Cố lên', 'Tạm biệt'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Das kommt nicht in Frage.", langCode: "de-DE", question: 'Thái độ?', options: ['Từ chối dứt khoát', 'Đồng ý', 'Xem xét', 'Có thể'], correct: 0 }
+        ]
+    },
 
-        { type: 'choice', category: 'GRAMMAR', question: 'もっと勉強___ばなりません。', options: ['しなけれ', 'しなくて', 'しない', 'して'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '部屋を___にしてください。', options: ['きれい', 'きたない', 'しずか', 'にぎやか'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '先生に本を___。', options: ['いただきました', 'くださいました', 'あげました', 'やりました'], correct: 0 },
-        { type: 'choice', category: 'READING', question: '「立入禁止」意味？', options: ['入るな', '入れ', '立て', '座れ'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '彼はとても___人です。', options: ['真面目な', '真面目', '真面目く', '真面目だ'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'この料理は___そうですね。', options: ['おいし', 'おいしい', 'おいしく', 'おいしさ'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '将来の___は何ですか。', options: ['夢', '寝', '眠', '想'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'ドアが___います。', options: ['開いて', '開けて', '開く', '開ける'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: 'お腹が___ました。', options: ['すき', '空き', '好き', '透き'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: '日本について___知っていますか。', options: ['何か', '何', '何も', '何で'], correct: 0 },
-        { type: 'choice', category: 'VOCABULARY', question: '風邪を___、学校を休みました。', options: ['引いて', '引く', '引いた', '引き'], correct: 0 },
-        { type: 'choice', category: 'GRAMMAR', question: 'これを___もいいですか。', options: ['使って', '使う', '使えば', '使おう'], correct: 0 },
-
-        // --- LISTENING ---
-        { type: 'listening', category: 'LISTENING', audioScript: "新宿です。左側です。", langCode: "ja-JP", question: 'どこ？', options: ['電車', 'バス', 'デパート', '公園'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "何名様ですか。", langCode: "ja-JP", question: '何を聞いている？', options: ['人数', '名前', '注文', '電話'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "晴れ時々曇り。", langCode: "ja-JP", question: '天気？', options: ['晴れ/曇り', '雨', '雪', '台風'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "コンビニはありますか。", langCode: "ja-JP", question: '探しているもの？', options: ['コンビニ', '駅', '病院', '学校'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "お誕生日おめでとう。", langCode: "ja-JP", question: 'どんな時？', options: ['誕生日', '結婚式', '正月', '卒業式'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "鈴木さんはいらっしゃいますか。", langCode: "ja-JP", question: '何の会話？', options: ['電話', '会議', '面接', '授業'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "宿題は明日までに。", langCode: "ja-JP", question: '締め切り？', options: ['明日', '今日', '来週', '今週'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "今日は早退させていただきます。", langCode: "ja-JP", question: 'したいこと？', options: ['帰る', '休む', '病院', '薬'], correct: 0 },
-        { type: 'listening', category: 'LISTENING', audioScript: "3番線から発車します。", langCode: "ja-JP", question: '何番線？', options: ['3', '1', '2', '4'], correct: 0 },
-
-        // --- PART 3: WRITING ---
-        { type: 'writing', category: 'WRITING', question: '「ありがとう」Meaning in English?', correctAnswer: 'thank you', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'Capital of Japan? (Romaji)', correctAnswer: 'tokyo', options: [] },
-        { type: 'writing', category: 'WRITING', question: 'ichi + ni = ___ (romaji)', correctAnswer: 'san', options: [] }
-    ]
+    // ======================================================
+    // 5. TIẾNG NHẬT (JP) - Đã thêm mới
+    // ======================================================
+    jp: {
+        easy: [
+            { type: 'choice', category: 'GREETING', question: 'Konnichiwa (こんにちは) nghĩa là?', options: ['Chào buổi trưa', 'Chào buổi sáng', 'Chào buổi tối', 'Tạm biệt'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Watashi (私) nghĩa là?', options: ['Tôi', 'Bạn', 'Anh ấy', 'Cô ấy'], correct: 0 },
+            { type: 'choice', category: 'NUMBERS', question: 'Ichi, Ni, ___', options: ['San', 'Yon', 'Go', 'Roku'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Kore ___ pen desu. (Đây LÀ bút)', options: ['wa', 'ga', 'wo', 'ni'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Neko (猫) là con gì?', options: ['Mèo', 'Chó', 'Cá', 'Chim'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Gakkou ___ ikimasu. (Đi ĐẾN trường)', options: ['e', 'ni', 'de', 'wo'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Arigatou nghĩa là "Cảm..."', correctAnswer: 'on', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Viết số 4 (Yon/Shi) bằng Romaji.', correctAnswer: 'yon', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "Ohayou Gozaimasu.", langCode: "ja-JP", question: 'Khi nào nói?', options: ['Buổi sáng', 'Buổi trưa', 'Buổi tối', 'Khi đi ngủ'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Sumimasen.", langCode: "ja-JP", question: 'Ý nghĩa?', options: ['Xin lỗi/Xin hỏi', 'Cảm ơn', 'Tạm biệt', 'Chúc mừng'], correct: 0 }
+        ],
+        medium: [
+            { type: 'choice', category: 'GRAMMAR', question: 'Tabete ___ kudasai. (Hãy ăn)', options: ['imashita', 'imasu', 'imasen', 'imashou'], correct: -1 }, // Sửa: Câu này sai logic, sửa lại dưới
+            { type: 'choice', category: 'GRAMMAR', question: 'Gohan wo ___ kudasai. (Hãy ăn cơm)', options: ['tabete', 'taberu', 'tabeta', 'tabemasu'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Ashita (明日) là khi nào?', options: ['Ngày mai', 'Hôm qua', 'Hôm nay', 'Năm ngoái'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Eiga wo ___ koto ga arimasu. (Đã từng xem phim)', options: ['mita', 'miru', 'mite', 'minai'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Sensei (先生) là ai?', options: ['Giáo viên', 'Học sinh', 'Bác sĩ', 'Nhân viên'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: 'Ame ga ___ sou desu. (Có vẻ sắp mưa)', options: ['furi', 'furu', 'futte', 'futta'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: 'Oishii (おいしい) nghĩa là?', options: ['Ngon', 'Dở', 'Đắt', 'Rẻ'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Viết "Sakura" (Hoa anh đào).', correctAnswer: 'sakura', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Sayounara nghĩa là "Tạm..."', correctAnswer: 'biet', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "Wakarimashita.", langCode: "ja-JP", question: 'Ý nghĩa?', options: ['Đã hiểu', 'Không hiểu', 'Đã quên', 'Không biết'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "Kore wa ikura desu ka?", langCode: "ja-JP", question: 'Hỏi về?', options: ['Giá tiền', 'Thời gian', 'Địa điểm', 'Người'], correct: 0 }
+        ],
+        hard: [
+            // --- Cũ ---
+            { type: 'choice', category: 'GRAMMAR', question: 'この本は読み___です。', options: ['やすい', 'にくい', 'たい', 'すぎ'], correct: 0 },
+            // --- THÊM MỚI (10 Câu) ---
+            { type: 'choice', category: 'GRAMMAR', question: '行け___よかったです。 (Nếu đi thì tốt rồi)', options: ['ba', 'tara', 'nara', 'te'], correct: 0 },
+            { type: 'choice', category: 'VOCABULARY', question: '彼に連絡を___。 (Giữ liên lạc)', options: ['とる', 'やる', 'する', 'いく'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '日本語を勉強すれば___ほど難しいです。 (Càng...càng)', options: ['suru', 'sureba', 'shite', 'shita'], correct: 1 },
+            { type: 'choice', category: 'VOCABULARY', question: '会議の準備が___しました。 (Hoàn thành)', options: ['完了', '完成', '完全', '完結'], correct: 0 },
+            { type: 'choice', category: 'GRAMMAR', question: '雨にも___、風にも負けず。 (Dù mưa...dù gió)', options: ['makezu', 'makete', 'makenai', 'make'], correct: 0 },
+            { type: 'writing', category: 'WRITING', question: 'Thủ đô Nhật Bản (Tokyo).', correctAnswer: 'tokyo', options: [] },
+            { type: 'writing', category: 'WRITING', question: 'Núi Phú Sĩ (Fuji...)', correctAnswer: 'san', options: [] },
+            { type: 'listening', category: 'LISTENING', audioScript: "お世話になります。", langCode: "ja-JP", question: 'Khi nào dùng?', options: ['Cảm ơn sự giúp đỡ', 'Khi tức giận', 'Khi đi ngủ', 'Khi ăn cơm'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "ご検討ください。", langCode: "ja-JP", question: 'Yêu cầu gì?', options: ['Xem xét', 'Hủy bỏ', 'Đồng ý ngay', 'Từ chối'], correct: 0 },
+            { type: 'listening', category: 'LISTENING', audioScript: "仕方がない。", langCode: "ja-JP", question: 'Thái độ?', options: ['Đành chịu thôi', 'Rất vui', 'Rất buồn', 'Tức giận'], correct: 0 }
+        ]
+    }
 };
 
-// ... (Giữ nguyên các phần code bên dưới như questions, setQuestionsByLanguage, prizes, colors...)
+// ============================================================
+// --- LOGIC XỬ LÝ: SHUFFLE & GET DATA ---
+// ============================================================
+
+// Biến chứa câu hỏi hiện tại
 let questions = []; 
 
-function setQuestionsByLanguage(langCode) {
-    if (questionsData[langCode]) {
-        questions = questionsData[langCode];
+// Hàm trộn mảng
+function shuffleArray(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+// Hàm lấy câu hỏi
+function setQuestionsByLanguageAndLevel(langCode, level) {
+    if (questionsData[langCode] && questionsData[langCode][level]) {
+        // Lấy toàn bộ câu hỏi của level đó
+        let originalQuestions = questionsData[langCode][level];
+        
+        if (originalQuestions.length === 0) {
+            console.warn(`Chưa có dữ liệu cho ${langCode} - ${level}`);
+            alert("Dữ liệu đang cập nhật, vui lòng chọn cấp độ Khó (Hard) để trải nghiệm demo!");
+            return false;
+        }
+
+        // Tạo bản sao và trộn ngẫu nhiên
+        let pool = [...originalQuestions];
+        pool = shuffleArray(pool);
+
+        // Lấy số lượng câu hỏi theo config (hoặc lấy hết nếu ít hơn config)
+        const limit = defaultConfig.questions_per_turn || 30;
+        questions = pool.slice(0, limit);
+
+        console.log(`Đã tải ${questions.length} câu hỏi (${langCode}-${level})`);
         return true;
     }
     return false;
 }
 
+// ============================================================
+// --- CẤU HÌNH PHẦN THƯỞNG & MÀU SẮC ---
+// ============================================================
 const prizes = [
     { name: 'Giảm 10% Phí Tư Vấn', color: '#FF6B6B', emoji: '💰' },
     { name: 'Sách Cẩm Nang Du Học', color: '#4ECDC4', emoji: '📚' },

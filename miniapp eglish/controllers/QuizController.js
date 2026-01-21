@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ĐIỀU HƯỚNG MÀN HÌNH ---
     function showScreen(screenName) {
-        const screens = ['welcome', 'form', 'language', 'quiz', 'results', 'wheel'];
+const screens = ['welcome', 'form', 'language', 'level', 'quiz', 'results', 'wheel'];
         screens.forEach(screen => {
             const el = document.getElementById(`screen-${screen}`);
             if (el) el.classList.add('hidden');
@@ -190,35 +190,64 @@ document.addEventListener('DOMContentLoaded', () => {
             showScreen('language'); 
         });
     }
+const levelButtons = document.querySelectorAll('.level-btn');
+    if (levelButtons.length > 0) {
+        levelButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const level = this.getAttribute('data-level');
+                const lang = participantData.language; // Lấy ngôn ngữ đã chọn trước đó
 
+                // Gọi hàm mới trong DataModel
+                if (typeof setQuestionsByLanguageAndLevel === 'function') {
+                    const isSuccess = setQuestionsByLanguageAndLevel(lang, level);
+                    
+                    if (isSuccess) {
+                        participantData.level = level; // Lưu level vào data
+                        saveSession(participantData);
+
+                        // Reset điểm
+                        score = 0;
+                        correctCount = 0;
+                        currentQuestion = 0;
+
+                        showScreen('quiz'); // Bắt đầu vào Quiz
+                        renderQuestion();
+                    } else {
+                        alert("Bộ câu hỏi cấp độ này đang cập nhật, vui lòng chọn cấp độ khác!");
+                    }
+                } else {
+                    console.error("Lỗi: Không tìm thấy hàm setQuestionsByLanguageAndLevel");
+                }
+            });
+        });
+    }
+
+    // Nút quay lại từ màn hình Level
+    const backToLangBtn = document.getElementById('back-to-lang-btn');
+    if (backToLangBtn) {
+        backToLangBtn.addEventListener('click', () => {
+            showScreen('language');
+        });
+    }
     // 3. CHỌN NGÔN NGỮ
+   // 3. CÁC NÚT CHỌN NGÔN NGỮ
     const langButtons = document.querySelectorAll('.lang-btn');
     if (langButtons.length > 0) {
         langButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 const lang = this.getAttribute('data-lang');
                 
-                if (typeof setQuestionsByLanguage === 'function') {
-                    const isSuccess = setQuestionsByLanguage(lang);
+                // Lưu ngôn ngữ đã chọn vào biến tạm và session
+                if (participantData) {
+                    participantData.language = lang;
+                    saveSession(participantData);
                     
-                    if (isSuccess) {
-                        if (participantData) {
-                            participantData.language = lang;
-                            saveSession(participantData);
-                        }
-
-                        // Reset game state
-                        score = 0;
-                        correctCount = 0;
-                        currentQuestion = 0;
-                        
-                        initSkillTracker(); // Khởi tạo điểm chuẩn
-
-                        showScreen('quiz');
-                        renderQuestion();
-                    } else {
-                        alert("Bộ câu hỏi ngôn ngữ này đang cập nhật!");
-                    }
+                    console.log("Đã chọn ngôn ngữ:", lang);
+                    
+                    // --- SỬA ĐỔI QUAN TRỌNG ---
+                    // Thay vì gọi setQuestions và vào quiz ngay, 
+                    // chúng ta chuyển sang màn hình chọn cấp độ.
+                    showScreen('level'); 
                 }
             });
         });

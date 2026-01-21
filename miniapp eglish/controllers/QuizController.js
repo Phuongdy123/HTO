@@ -8,10 +8,51 @@ document.addEventListener('DOMContentLoaded', () => {
     let correctCount = 0;
     let selectedAnswer = null;
     let answered = false;
-    let skillMetrics = {}; // Theo dõi điểm từng kỹ năng
+    let skillMetrics = {}; // Theo dõi điểm từng kỹ năng để AI phân tích
     
-    // URL Google Apps Script của bạn (GIỮ NGUYÊN)
+    // URL Google Apps Script (GIỮ NGUYÊN)
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwY1lyZTBZP_zpnSP3_6_fKo3NZZY21z1tCS1eJTPMGtJlCrgBJcr5CrBC77yxvDQrW/exec';
+
+    // ============================================================
+    // --- CẤU HÌNH QUY ĐỔI ĐIỂM & KHÓA HỌC (DATA SETTINGS) ---
+    // ============================================================
+    const CERTIFICATE_MAPPING = {
+        // Tiếng Anh -> IELTS
+        en: [
+            { min: 0, label: "Pre-IELTS (Band 0 - 3.0)", advice: "Bạn đang ở giai đoạn khởi động. Cần xây dựng lại nền tảng từ vựng và ngữ pháp căn bản.", course: "Tiếng Anh Lấy Lại Căn Bản" },
+            { min: 35, label: "IELTS 3.5 - 4.5", advice: "Bạn đã có nền tảng nhưng chưa vững. Cần luyện thêm phản xạ nghe nói và phát âm.", course: "IELTS Foundation (Mục tiêu 5.0+)" },
+            { min: 55, label: "IELTS 5.0 - 6.0", advice: "Khá tốt! Bạn giao tiếp ổn nhưng còn mắc lỗi ngữ pháp phức tạp. Cần tăng cường từ vựng học thuật.", course: "IELTS Intensive (Bứt phá 6.5)" },
+            { min: 75, label: "IELTS 6.5 - 7.5", advice: "Ấn tượng! Bạn đủ điều kiện nộp hồ sơ du học. Hãy trau chuốt kỹ năng Viết (Writing) để đạt điểm tối đa.", course: "Luyện Viết Chuyên Sâu & Săn Học Bổng" },
+            { min: 90, label: "IELTS 8.0+", advice: "Xuất sắc! Trình độ của bạn tương đương người bản xứ. Hãy tập trung vào bài luận săn học bổng toàn phần.", course: "Mentoring 1:1 Săn Học Bổng Chính Phủ" }
+        ],
+        // Tiếng Trung -> HSK
+        zh: [
+            { min: 0, label: "HSK 1 (Sơ cấp)", advice: "Bạn mới bắt đầu. Hãy tập trung vào Pinyin và các bộ thủ cơ bản.", course: "Tiếng Trung Sơ Cấp 1" },
+            { min: 40, label: "HSK 2-3", advice: "Bạn đã nắm được từ vựng cơ bản. Cần luyện thêm kỹ năng đọc hiểu chữ Hán và ngữ pháp.", course: "Tiếng Trung Giao Tiếp Phản Xạ" },
+            { min: 70, label: "HSK 4 (Trung cấp)", advice: "Trình độ trung cấp. Đủ điều kiện du học hệ tiếng. Cần luyện thêm viết văn và dịch thuật.", course: "Luyện Thi HSK 4-5 Cấp Tốc" },
+            { min: 90, label: "HSK 5-6 (Cao cấp)", advice: "Rất giỏi! Bạn có thể học đại học bằng tiếng Trung. Hãy thử sức với các bài báo chí.", course: "Tiếng Trung Thương Mại / Biên Phiên Dịch" }
+        ],
+        // Tiếng Hàn -> TOPIK
+        kr: [
+            { min: 0, label: "TOPIK I (Cấp 1)", advice: "Vốn từ vựng còn ít. Cần học thuộc bảng chữ cái Hangul và các câu chào hỏi thông dụng.", course: "Tiếng Hàn Sơ Cấp (Học phí ưu đãi)" },
+            { min: 40, label: "TOPIK I (Cấp 2)", advice: "Ngữ pháp cơ bản ổn. Cần luyện nghe nhiều hơn để quen tốc độ nói của người Hàn.", course: "Tiếng Hàn Giao Tiếp Đời Sống" },
+            { min: 70, label: "TOPIK II (Cấp 3-4)", advice: "Đủ điều kiện nhập học chuyên ngành. Cần chú trọng kính ngữ và văn viết (Sseugi).", course: "Luyện Thi TOPIK II Trung Cấp" },
+            { min: 90, label: "TOPIK II (Cấp 5-6)", advice: "Trình độ cao cấp. Bạn hoàn toàn có thể săn học bổng Chính phủ Hàn Quốc.", course: "Lớp Luyện Biên Phiên Dịch Hàn - Việt" }
+        ],
+        // Tiếng Đức -> CEFR (Goethe)
+        de: [
+            { min: 0, label: "A1 (Sơ cấp)", advice: "Cần làm quen với giống danh từ (Der/Die/Das) và cách chia động từ cơ bản.", course: "Tiếng Đức A1 Cho Người Mới" },
+            { min: 50, label: "A2 - B1", advice: "Có thể giao tiếp cơ bản. Cần luyện nói và viết thư để xin Visa du học nghề.", course: "Tiếng Đức B1 Cấp Tốc (Du học nghề)" },
+            { min: 85, label: "B2 (Cao cấp)", advice: "Tuyệt vời. Đủ khả năng học Đại học tại Đức. Hãy luyện thêm về văn phong học thuật.", course: "Luyện Thi B2 Goethe" }
+        ],
+        // Tiếng Nhật -> JLPT
+        jp: [
+            { min: 0, label: "N5 (Sơ cấp)", advice: "Hãy bắt đầu với bảng chữ cái Hiragana/Katakana và 100 chữ Kanji cơ bản.", course: "Tiếng Nhật N5 Cấp Tốc" },
+            { min: 40, label: "N4", advice: "Đã có thể giao tiếp hội thoại thường ngày. Cần học thêm Kanji và các thể động từ.", course: "Tiếng Nhật N4 Giao Tiếp" },
+            { min: 70, label: "N3 (Trung cấp)", advice: "Trình độ trung cấp. Đủ điều kiện làm việc tại Nhật. Cần luyện đọc hiểu tốc độ cao.", course: "Luyện Thi JLPT N3" },
+            { min: 90, label: "N2 - N1", advice: "Trình độ cao cấp. Bạn sử dụng tiếng Nhật rất tự nhiên trong môi trường Business.", course: "Tiếng Nhật Business / Phiên Dịch" }
+        ]
+    };
 
     // ============================================================
     // --- CÁC HÀM HỖ TRỢ LOGIC (THUẬT TOÁN) ---
@@ -20,31 +61,68 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Hàm khởi tạo bộ đếm kỹ năng (TÍNH ĐIỂM ĐỘNG)
     function initSkillTracker() {
         skillMetrics = {};
-        const pointsPerQuestion = 100 / questions.length; // Tự động chia điểm (VD: 30 câu ~ 3.33 điểm/câu)
+        const pointsPerQuestion = 100 / questions.length; 
 
         questions.forEach(q => {
-            // Lấy category, nếu không có thì gán mặc định
             const cat = q.category ? q.category.toUpperCase() : 'GENERAL';
             
             if (!skillMetrics[cat]) {
                 skillMetrics[cat] = { current: 0, total: 0 };
             }
-            // Cộng điểm tối đa cho kỹ năng này
             skillMetrics[cat].total += pointsPerQuestion; 
         });
     }
 
-    // 2. Hàm xếp loại học viên
-    function getStudentRank(score) {
-        if (score >= 90) {
-            return { label: "XUẤT SẮC 🌟", color: "text-yellow-500", message: "Chúc mừng bạn đã hoàn thành bài test xuất sắc" };
-        } else if (score >= 75) {
-            return { label: "GIỎI 💪", color: "text-green-600", message: "Nền tảng vững chắc, đủ điều kiện visa thẳng." };
-        } else if (score >= 50) {
-            return { label: "KHÁ 👍", color: "text-blue-500", message: "Đủ điều kiện du học, cần ôn luyện thêm." };
-        } else {
-            return { label: "CẦN CỐ GẮNG 😅", color: "text-orange-500", message: "Nên tham gia khóa học bổ trợ nền tảng." };
+    // 2. Hàm Phân Tích & Xếp loại Học Viên (AI LOGIC)
+    function getStudentRank(score, language) {
+        // A. Tìm kỹ năng yếu nhất để nhận xét
+        let weakestSkill = '';
+        let minSkillScore = 100;
+        
+        for (const [cat, data] of Object.entries(skillMetrics)) {
+            // Tránh chia cho 0
+            if (data.total === 0) continue;
+            
+            const skillPercent = (data.current / data.total) * 100;
+            if (skillPercent <= minSkillScore) {
+                minSkillScore = skillPercent;
+                weakestSkill = cat;
+            }
         }
+
+        // Mapping tên kỹ năng sang tiếng Việt cho thân thiện
+        const skillMap = {
+            'LISTENING': 'Nghe hiểu',
+            'READING': 'Đọc hiểu',
+            'GRAMMAR': 'Ngữ pháp',
+            'VOCABULARY': 'Từ vựng',
+            'WRITING': 'Viết',
+            'NUMBERS': 'Số học',
+            'GREETING': 'Giao tiếp'
+        };
+        const weakName = skillMap[weakestSkill] || weakestSkill;
+
+        // B. Lấy thông tin chứng chỉ từ bảng cấu hình
+        // Mặc định là 'en' nếu không tìm thấy ngôn ngữ
+        const langCode = language || 'en';
+        const langData = CERTIFICATE_MAPPING[langCode] || CERTIFICATE_MAPPING['en'];
+        
+        // Tìm mức phù hợp với điểm số (Sắp xếp giảm dần để tìm mức cao nhất thỏa mãn)
+        const result = langData.sort((a, b) => b.min - a.min).find(item => score >= item.min) || langData[langData.length - 1];
+
+        // C. Tạo nội dung AI nhận xét
+        const aiMessage = `
+            Dựa trên kết quả bài test, trình độ hiện tại của bạn tương đương <strong>${result.label}</strong>.<br>
+            Bạn làm tốt các phần cơ bản, tuy nhiên kỹ năng <strong>${weakName}</strong> còn hạn chế (chỉ đạt ${Math.round(minSkillScore)}%).<br>
+            ${result.advice}
+        `;
+
+        return {
+            label: result.label, // VD: IELTS 6.5
+            color: score >= 70 ? "text-green-600" : (score >= 50 ? "text-blue-500" : "text-orange-500"),
+            message: aiMessage,
+            course_recommend: result.course
+        };
     }
 
     // 3. Hàm gửi dữ liệu lên Google Sheet
@@ -80,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CẤU HÌNH LƯU TRỮ (LOCAL STORAGE) ---
-    const STORAGE_KEY = 'quiz_user_session_v3'; // Bump version để clear cache cũ
+    const STORAGE_KEY = 'quiz_user_session_v5'; // Bump version
 
     function saveSession(data) {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.error(e); }
@@ -103,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ĐIỀU HƯỚNG MÀN HÌNH ---
     function showScreen(screenName) {
-const screens = ['welcome', 'form', 'language', 'level', 'quiz', 'results', 'wheel'];
+        const screens = ['welcome', 'form', 'language', 'level', 'quiz', 'results', 'wheel'];
         screens.forEach(screen => {
             const el = document.getElementById(`screen-${screen}`);
             if (el) el.classList.add('hidden');
@@ -176,6 +254,7 @@ const screens = ['welcome', 'form', 'language', 'level', 'quiz', 'results', 'whe
                 phone_consent: phoneConsent,
                 score: 0,
                 language: '',
+                level: '',
                 writing_responses: [],
                 completed_at: new Date().toISOString(),
                 unlocked_wheel: false,
@@ -190,70 +269,66 @@ const screens = ['welcome', 'form', 'language', 'level', 'quiz', 'results', 'whe
             showScreen('language'); 
         });
     }
-const levelButtons = document.querySelectorAll('.level-btn');
-    if (levelButtons.length > 0) {
-        levelButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const level = this.getAttribute('data-level');
-                const lang = participantData.language; // Lấy ngôn ngữ đã chọn trước đó
 
-                // Gọi hàm mới trong DataModel
-                if (typeof setQuestionsByLanguageAndLevel === 'function') {
-                    const isSuccess = setQuestionsByLanguageAndLevel(lang, level);
-                    
-                    if (isSuccess) {
-                        participantData.level = level; // Lưu level vào data
-                        saveSession(participantData);
-
-                        // Reset điểm
-                        score = 0;
-                        correctCount = 0;
-                        currentQuestion = 0;
-
-                        showScreen('quiz'); // Bắt đầu vào Quiz
-                        renderQuestion();
-                    } else {
-                        alert("Bộ câu hỏi cấp độ này đang cập nhật, vui lòng chọn cấp độ khác!");
-                    }
-                } else {
-                    console.error("Lỗi: Không tìm thấy hàm setQuestionsByLanguageAndLevel");
-                }
-            });
-        });
-    }
-
-    // Nút quay lại từ màn hình Level
-    const backToLangBtn = document.getElementById('back-to-lang-btn');
-    if (backToLangBtn) {
-        backToLangBtn.addEventListener('click', () => {
-            showScreen('language');
-        });
-    }
-    // 3. CHỌN NGÔN NGỮ
-   // 3. CÁC NÚT CHỌN NGÔN NGỮ
+    // 3. CÁC NÚT CHỌN NGÔN NGỮ
     const langButtons = document.querySelectorAll('.lang-btn');
     if (langButtons.length > 0) {
         langButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 const lang = this.getAttribute('data-lang');
                 
-                // Lưu ngôn ngữ đã chọn vào biến tạm và session
                 if (participantData) {
                     participantData.language = lang;
                     saveSession(participantData);
-                    
-                    console.log("Đã chọn ngôn ngữ:", lang);
-                    
-                    // --- SỬA ĐỔI QUAN TRỌNG ---
-                    // Thay vì gọi setQuestions và vào quiz ngay, 
-                    // chúng ta chuyển sang màn hình chọn cấp độ.
                     showScreen('level'); 
                 }
             });
         });
     }
 
-    // 4. ĐIỀU HƯỚNG QUIZ
+    // 3.1 CÁC NÚT CHỌN CẤP ĐỘ
+    const levelButtons = document.querySelectorAll('.level-btn');
+    if (levelButtons.length > 0) {
+        levelButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const level = this.getAttribute('data-level');
+                const lang = participantData.language;
+
+                // Kiểm tra hàm tồn tại
+                if (typeof setQuestionsByLanguageAndLevel === 'function') {
+                    const isSuccess = setQuestionsByLanguageAndLevel(lang, level);
+                    
+                    if (isSuccess) {
+                        participantData.level = level;
+                        saveSession(participantData);
+
+                        // Reset game state
+                        score = 0;
+                        correctCount = 0;
+                        currentQuestion = 0;
+                        
+                        initSkillTracker(); // Khởi tạo bộ đếm kỹ năng
+
+                        showScreen('quiz');
+                        renderQuestion();
+                    } else {
+                        alert("Bộ câu hỏi này đang cập nhật, vui lòng quay lại sau!");
+                    }
+                } else {
+                    console.error("Lỗi: Không tìm thấy hàm setQuestionsByLanguageAndLevel trong DataModel.js");
+                    alert("Lỗi hệ thống tải dữ liệu.");
+                }
+            });
+        });
+    }
+
+    // Nút quay lại
+    const backToLangBtn = document.getElementById('back-to-lang-btn');
+    if (backToLangBtn) {
+        backToLangBtn.addEventListener('click', () => showScreen('language'));
+    }
+
+    // 4. QUIZ NAVIGATION
     const nextBtn = document.getElementById('next-btn');
     if (nextBtn) {
         nextBtn.addEventListener('click', nextQuestion);
@@ -261,9 +336,7 @@ const levelButtons = document.querySelectorAll('.level-btn');
 
     const restartBtn = document.getElementById('restart-btn');
     if (restartBtn) {
-        restartBtn.addEventListener('click', () => {
-            showScreen('language');
-        });
+        restartBtn.addEventListener('click', () => showScreen('language'));
     }
 
     // 5. LUCKY WHEEL BUTTONS
@@ -282,16 +355,14 @@ const levelButtons = document.querySelectorAll('.level-btn');
 
     const backResBtn = document.getElementById('back-to-results-btn');
     if (backResBtn) {
-        backResBtn.addEventListener('click', () => {
-            showScreen('results');
-        });
+        backResBtn.addEventListener('click', () => showScreen('results'));
     }
 
     // ============================================================
     // --- LOGIC QUIZ (CORE) ---
     // ============================================================
 
-function renderQuestion() {
+    function renderQuestion() {
         if (!questions || questions.length === 0) return;
 
         const q = questions[currentQuestion];
@@ -305,15 +376,13 @@ function renderQuestion() {
 
         document.getElementById('question-category').textContent = q.category || 'QUIZ';
         
-        // --- [FIX] XỬ LÝ ẨN/HIỆN TIÊU ĐỀ ĐỂ TRÁNH LẶP LẠI ---
         const mainQText = document.getElementById('question-text');
         if (q.type === 'writing') {
-            mainQText.style.display = 'none'; // Ẩn tiêu đề gốc nếu là câu Writing
+            mainQText.style.display = 'none';
         } else {
-            mainQText.style.display = 'block'; // Hiện lại nếu là trắc nghiệm/nghe
+            mainQText.style.display = 'block';
             mainQText.textContent = q.question;
         }
-        // ----------------------------------------------------
         
         const progress = ((currentQuestion + 1) / questions.length) * 100;
         document.getElementById('progress-bar').style.width = `${progress}%`;
@@ -325,8 +394,6 @@ function renderQuestion() {
         answered = false;
         document.getElementById('feedback').classList.add('hidden');
         disableNextButton(); 
-
-        // --- RENDER THEO LOẠI CÂU HỎI ---
 
         // A. LISTENING
         if (q.type === 'listening' && q.audioScript) {
@@ -373,64 +440,49 @@ function renderQuestion() {
             }, 0);
         }
 
-  
-if (q.type === 'writing') {
-    const wrapper = document.createElement('div');
-    // Đổi thành flex-row để nằm ngang, items-center để căn giữa dọc
-    wrapper.className = "flex flex-row items-center w-full gap-4 mt-4"; 
-    
-    // 1. Hiển thị câu hỏi (Giữ nguyên)
-    const questionTextContainer = document.createElement('div');
-    questionTextContainer.className = "w-full mb-4 text-center"; // Để câu hỏi nằm riêng ở trên
-    const questionText = document.createElement('div');
-    questionText.className = "text-xl font-bold leading-relaxed text-gray-800 md:text-2xl";
-    questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
-    questionTextContainer.appendChild(questionText);
-    
-    // Chèn câu hỏi vào container chính trước (để nó nằm trên cụm input)
-    container.appendChild(questionTextContainer);
+        // B. WRITING
+        if (q.type === 'writing') {
+            const wrapper = document.createElement('div');
+            wrapper.className = "flex flex-row items-center w-full gap-4 mt-4"; 
+            
+            const questionTextContainer = document.createElement('div');
+            questionTextContainer.className = "w-full mb-4 text-center";
+            const questionText = document.createElement('div');
+            questionText.className = "text-xl font-bold leading-relaxed text-gray-800 md:text-2xl";
+            questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
+            questionTextContainer.appendChild(questionText);
+            
+            container.appendChild(questionTextContainer);
 
-    // 2. Ô nhập liệu (Thêm flex-1 để nó dài ra chiếm hết chỗ trống)
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'writing-input';
-    // flex-1: tự động dãn dài, text-left: gõ từ trái sang
-    input.className = "flex-1 p-4 text-xl font-bold text-left placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
-    input.placeholder = "Nhập đáp án...";
-    input.autocomplete = "off";
-    
-    // 3. Khu vực hiện thông báo (Sửa để nằm gọn bên phải)
-    const feedbackMsg = document.createElement('div');
-    feedbackMsg.id = 'writing-feedback-msg';
-    // min-w-fit để không bị co lại, whitespace-nowrap để chữ không xuống dòng
-    feedbackMsg.className = "hidden px-4 py-2 text-lg font-bold transition-all min-w-fit rounded-xl whitespace-nowrap"; 
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'writing-input';
+            input.className = "flex-1 p-4 text-xl font-bold text-left placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
+            input.placeholder = "Nhập đáp án...";
+            input.autocomplete = "off";
+            
+            const feedbackMsg = document.createElement('div');
+            feedbackMsg.id = 'writing-feedback-msg';
+            feedbackMsg.className = "hidden px-4 py-2 text-lg font-bold transition-all min-w-fit rounded-xl whitespace-nowrap"; 
 
-    // Xử lý sự kiện gõ phím
-    input.addEventListener('input', (e) => {
-        // Chỉ mở nút Next nếu chưa trả lời
-        if (!answered) {
-            if(e.target.value.trim().length > 0) {
-                enableNextButton(); 
-            } else {
-                disableNextButton();
-            }
+            input.addEventListener('input', (e) => {
+                if (!answered) {
+                    if(e.target.value.trim().length > 0) enableNextButton(); 
+                    else disableNextButton();
+                }
+            });
+
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && e.target.value.trim().length > 0 && !answered) {
+                    checkWritingAnswerAndNext();
+                }
+            });
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(feedbackMsg);
+            container.appendChild(wrapper);
+            return; 
         }
-    });
-
-    // Xử lý phím Enter
-    input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && e.target.value.trim().length > 0 && !answered) {
-            checkWritingAnswerAndNext();
-        }
-    });
-
-    // Gắn Input và Feedback vào wrapper ngang
-    wrapper.appendChild(input);
-    wrapper.appendChild(feedbackMsg);
-    
-    container.appendChild(wrapper);
-    return; 
-}
 
         // C. MULTIPLE CHOICE
         if (q.options && q.options.length > 0) {
@@ -455,6 +507,7 @@ if (q.type === 'writing') {
             });
         }
     }
+
     function selectAnswer(index) {
         if (answered) return;
         
@@ -464,16 +517,14 @@ if (q.type === 'writing') {
         const q = questions[currentQuestion];
         const isCorrect = index === q.correct;
         const cat = q.category ? q.category.toUpperCase() : 'GENERAL';
-        const pointsPerQuestion = 100 / questions.length; // Tính điểm động
+        const pointsPerQuestion = 100 / questions.length;
 
         if (isCorrect) {
             score += pointsPerQuestion;
             correctCount++;
-            // Cập nhật điểm kỹ năng
             if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
         }
         
-        // Hiển thị làm tròn
         document.getElementById('score-display').textContent = Math.round(score);
 
         showFeedback(isCorrect, q.correct);
@@ -489,8 +540,6 @@ if (q.type === 'writing') {
             feedback.style.background = '#dcfce7'; 
             feedback.style.color = '#15803d';      
             feedback.style.border = '1px solid #86efac';
-            
-            // Tính số điểm cộng hiển thị (làm tròn)
             const points = Math.round(100 / questions.length);
             feedback.innerHTML = `🎉 Chính xác! +${points} điểm`;
         } else {
@@ -538,146 +587,148 @@ if (q.type === 'writing') {
         document.getElementById('next-btn-icon').textContent = '👆';
     }
 
-async function nextQuestion() {
-    const q = questions[currentQuestion];
+    async function nextQuestion() {
+        const q = questions[currentQuestion];
 
-    // --- NẾU LÀ CÂU ĐIỀN TỪ (WRITING) ---
-    if (q.type === 'writing') {
-        // Nếu CHƯA trả lời -> Gọi hàm kiểm tra
-        if (!answered) {
-            await checkWritingAnswerAndNext();
-            return; // Dừng lại, không chuyển câu ngay
+        if (q.type === 'writing') {
+            if (!answered) {
+                await checkWritingAnswerAndNext();
+                return; 
+            }
         }
-        // Nếu ĐÃ trả lời rồi (answered = true) -> Cho phép đi tiếp xuống dưới để chuyển câu
-    }
 
-    // --- LOGIC CHUYỂN CÂU (Chung cho cả trắc nghiệm và writing đã xong) ---
-    if (currentQuestion < questions.length - 1) {
-        currentQuestion++;
-        renderQuestion();
-    } else {
-        await showResults();
-    }
-}
-    // Hàm xử lý riêng cho phần Writing: Chấm điểm, hiện đáp án và delay
-// Hàm xử lý riêng cho phần Writing
-async function checkWritingAnswerAndNext() {
-    if (answered) return; 
-    answered = true;
-
-    const q = questions[currentQuestion];
-    const inputEl = document.getElementById('writing-input');
-    const feedbackEl = document.getElementById('writing-feedback-msg');
-    const nextBtn = document.getElementById('next-btn');
-    
-    // 1. Chỉ khóa Input, KHÔNG khóa nút Next nữa
-    inputEl.disabled = true;
-    
-    // Đổi trạng thái nút Next sang "Đang xử lý" tạm thời
-    nextBtn.disabled = true; 
-    document.getElementById('next-btn-text').textContent = 'Đang kiểm tra...';
-
-    const userAns = inputEl.value.trim().toLowerCase();
-    const correctAns = q.correctAnswer ? q.correctAnswer.trim().toLowerCase() : "";
-    const pointsPerQuestion = 100 / questions.length;
-
-    // Lưu log (Giữ nguyên)
-    if (!participantData.writing_responses) participantData.writing_responses = [];
-    participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputEl.value} (Đáp án: ${q.correctAnswer})`);
-
-    // 2. SO SÁNH & HIỂN THỊ (Sửa giao diện Feedback ngang hàng)
-    if (userAns === correctAns) {
-        // --- ĐÚNG ---
-        score += pointsPerQuestion;
-        correctCount++;
-        
-        const cat = q.category ? q.category.toUpperCase() : 'WRITING';
-        if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
-        
-        // Input xanh
-        inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-green-700 border-2 border-green-500 bg-green-50 rounded-xl";
-        
-        // Feedback bên cạnh
-        if(feedbackEl) {
-            feedbackEl.innerHTML = "🎉 Chính xác!";
-            feedbackEl.classList.remove('hidden');
-            feedbackEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
-        }
-    } else {
-        // --- SAI ---
-        // Input đỏ
-        inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-red-700 border-2 border-red-500 bg-red-50 rounded-xl";
-        
-        // Feedback bên cạnh (Hiện đáp án đúng)
-        if(feedbackEl) {
-            feedbackEl.innerHTML = `❌ Đáp án: ${q.correctAnswer}`;
-            feedbackEl.classList.remove('hidden');
-            feedbackEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
+        if (currentQuestion < questions.length - 1) {
+            currentQuestion++;
+            renderQuestion();
+        } else {
+            await showResults();
         }
     }
 
-    document.getElementById('score-display').textContent = Math.round(score);
+    async function checkWritingAnswerAndNext() {
+        if (answered) return; 
+        answered = true;
 
-    // 3. QUAN TRỌNG: MỞ KHÓA NÚT "CÂU TIẾP THEO" ĐỂ NGƯỜI DÙNG TỰ BẤM
-    // Bỏ đoạn await new Promise (delay) và bỏ đoạn tự động chuyển câu
-    
-    nextBtn.disabled = false; // Mở khóa nút
-    document.getElementById('next-btn-text').textContent = 'Câu tiếp theo'; // Đổi tên nút
-    document.getElementById('next-btn-icon').textContent = '➡️';
-    
-    // Lúc này biến 'answered' đã là true.
-    // Lần tới người dùng bấm nút Next, nó sẽ lọt vào logic chuyển câu trong hàm nextQuestion.
-}
- async function showResults() {
-        // --- 1. LÀM TRÒN ĐIỂM TỔNG KẾT ---
-        // Xử lý sai số thập phân (3.333...) để ra số đẹp (0-100)
+        const q = questions[currentQuestion];
+        const inputEl = document.getElementById('writing-input');
+        const feedbackEl = document.getElementById('writing-feedback-msg');
+        const nextBtn = document.getElementById('next-btn');
+        
+        inputEl.disabled = true;
+        nextBtn.disabled = true; 
+        document.getElementById('next-btn-text').textContent = 'Đang kiểm tra...';
+
+        const userAns = inputEl.value.trim().toLowerCase();
+        const correctAns = q.correctAnswer ? q.correctAnswer.trim().toLowerCase() : "";
+        const pointsPerQuestion = 100 / questions.length;
+
+        if (!participantData.writing_responses) participantData.writing_responses = [];
+        participantData.writing_responses.push(`Q${currentQuestion+1}: ${inputEl.value} (Đáp án: ${q.correctAnswer})`);
+
+        if (userAns === correctAns) {
+            score += pointsPerQuestion;
+            correctCount++;
+            const cat = q.category ? q.category.toUpperCase() : 'WRITING';
+            if(skillMetrics[cat]) skillMetrics[cat].current += pointsPerQuestion;
+            
+            inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-green-700 border-2 border-green-500 bg-green-50 rounded-xl";
+            if(feedbackEl) {
+                feedbackEl.innerHTML = "🎉 Chính xác!";
+                feedbackEl.classList.remove('hidden');
+                feedbackEl.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            }
+        } else {
+            inputEl.className = "flex-1 p-4 text-xl font-bold text-left text-red-700 border-2 border-red-500 bg-red-50 rounded-xl";
+            if(feedbackEl) {
+                feedbackEl.innerHTML = `❌ Đáp án: ${q.correctAnswer}`;
+                feedbackEl.classList.remove('hidden');
+                feedbackEl.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200');
+            }
+        }
+
+        document.getElementById('score-display').textContent = Math.round(score);
+
+        nextBtn.disabled = false; 
+        document.getElementById('next-btn-text').textContent = 'Câu tiếp theo'; 
+        document.getElementById('next-btn-icon').textContent = '➡️';
+    }
+
+    async function showResults() {
         score = Math.round(score); 
         if (score > 100) score = 100;
 
         const percentage = Math.round((correctCount / questions.length) * 100);
-        const unlockedWheel = score >= 60; // Mở khóa vòng quay nếu >= 60 điểm
+        const unlockedWheel = score >= 50; 
         
-        // --- 2. GỌI THUẬT TOÁN XẾP LOẠI ---
-        const rankInfo = getStudentRank(score);
+        // --- LOGIC PHÂN TÍCH AI (QUY ĐỔI ĐIỂM) ---
+        const currentLang = participantData.language || 'en';
+        const rankInfo = getStudentRank(score, currentLang);
 
-        // --- 3. CẬP NHẬT GIAO DIỆN KẾT QUẢ CHÍNH ---
         document.getElementById('final-score').textContent = score;
         document.getElementById('correct-answers').textContent = correctCount;
         document.getElementById('percentage').textContent = `${percentage}%`;
 
-        // Cập nhật Tiêu đề và Lời nhắn theo Xếp loại
-        const titleEl = document.querySelector('#screen-results h2'); 
-        if(titleEl) {
-            titleEl.textContent = rankInfo.label;
-            titleEl.className = `mb-1 text-3xl font-black font-sans ${rankInfo.color}`;
-        }
-        const subTitleEl = document.querySelector('#screen-results p');
-        if(subTitleEl) {
-            subTitleEl.textContent = rankInfo.message;
-        }
+        // Render AI Report Card
+        const aiReportHTML = `
+            <div class="mb-6 animate-fade-in-up">
+                <div class="relative p-5 text-left border border-blue-200 bg-blue-50/80 rounded-2xl shadow-sm">
+                    <div class="absolute -top-3 -right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                        <span>🤖</span> AI ANALYSIS
+                    </div>
+                    
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-md text-3xl">
+                            ${score >= 80 ? '🥇' : (score >= 50 ? '🥈' : '🥉')}
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Trình độ tương đương</div>
+                            <div class="text-xl font-black text-blue-800">${rankInfo.label}</div>
+                        </div>
+                    </div>
 
-        // --- 4. TẠO THANH KỸ NĂNG (SKILL BARS) ---
-        // [QUAN TRỌNG] Phần này sẽ hiển thị điểm cho từng kỹ năng bao gồm cả WRITING
+                    <div class="mb-4 text-sm leading-relaxed text-gray-700 bg-white p-4 rounded-xl border border-blue-100 shadow-inner">
+                        ${rankInfo.message}
+                    </div>
+
+                    <div class="pt-3 mt-3 border-t border-blue-200/50">
+                        <div class="mb-1 text-xs font-bold text-gray-500 uppercase tracking-wide">Khóa học đề xuất tại Hallo Saigon:</div>
+                        <div class="flex items-center justify-between p-3 text-white shadow-md bg-gradient-to-r from-orange-500 to-red-500 rounded-xl transform transition-transform hover:scale-[1.02]">
+                            <div class="font-bold text-sm flex items-center gap-2">
+                                <span>🔥</span> ${rankInfo.course_recommend}
+                            </div>
+                            <div class="text-xl">➔</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let reportContainer = document.getElementById('ai-report-container');
+        if (!reportContainer) {
+            reportContainer = document.createElement('div');
+            reportContainer.id = 'ai-report-container';
+            const scoreBlock = document.querySelector('#screen-results .bg-gradient-to-br'); 
+            if(scoreBlock) scoreBlock.insertAdjacentElement('afterend', reportContainer);
+        }
+        reportContainer.innerHTML = aiReportHTML;
+
+        // Render Skill Bars
         let skillsHTML = '<div class="space-y-4 mb-6 w-full p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">';
-        
         for (const [cat, data] of Object.entries(skillMetrics)) {
-            // Chỉ hiển thị nếu kỹ năng đó có câu hỏi trong bài thi
             if (data.total > 0) {
                 const percent = Math.round((data.current / data.total) * 100);
-                
-                // Làm tròn điểm hiển thị (VD: 3/10 thay vì 3.33/10)
                 const displayCurrent = Math.round(data.current);
                 const displayTotal = Math.round(data.total);
 
-                // Mapping tên kỹ năng sang tiếng Việt
                 let displayCat = cat;
                 if(cat === 'LISTENING') displayCat = '🎧 Nghe Hiểu (Listening)';
                 else if(cat === 'READING') displayCat = '📖 Đọc Hiểu (Reading)';
                 else if(cat === 'GRAMMAR') displayCat = '✍️ Ngữ Pháp (Grammar)';
                 else if(cat === 'VOCABULARY') displayCat = '🔤 Từ Vựng (Vocabulary)';
-                else if(cat === 'WRITING') displayCat = '📝 Kỹ Năng Viết (Writing)'; // [QUAN TRỌNG] Đã thêm dòng này
+                else if(cat === 'WRITING') displayCat = '📝 Kỹ Năng Viết (Writing)';
+                else if(cat === 'NUMBERS') displayCat = '🔢 Số Học (Numbers)';
+                else if(cat === 'GREETING') displayCat = '👋 Giao Tiếp (Greeting)';
 
-                // HTML cho thanh skill
                 skillsHTML += `
                     <div class="flex flex-col gap-2">
                         <div class="flex justify-between text-xs font-bold text-gray-600 uppercase tracking-wide">
@@ -693,15 +744,11 @@ async function checkWritingAnswerAndNext() {
         }
         skillsHTML += '</div>';
 
-        // Chèn vào HTML (Tìm vị trí thích hợp trong thẻ card kết quả)
         const resultCard = document.querySelector('#screen-results .card-3d');
         let skillsContainer = document.getElementById('skills-breakdown');
-        
-        // Nếu chưa có container thì tạo mới
         if (!skillsContainer) {
             skillsContainer = document.createElement('div');
             skillsContainer.id = 'skills-breakdown';
-            // Chèn trước thông báo mở khóa hoặc trước Grid thống kê
             const beforeTarget = document.getElementById('unlock-message') || document.querySelector('#screen-results .grid');
             if(beforeTarget && resultCard) {
                 resultCard.insertBefore(skillsContainer, beforeTarget);
@@ -711,33 +758,31 @@ async function checkWritingAnswerAndNext() {
         }
         skillsContainer.innerHTML = skillsHTML;
 
-        // --- 5. LOGIC VÒNG QUAY & LƯU DATA ---
+        // Logic Wheel
         const unlockMsg = document.getElementById('unlock-message');
         const spinBtn = document.getElementById('spin-wheel-btn');
 
-        // Cập nhật emoji cảm xúc dựa trên điểm số
         if (score === 100) document.getElementById('result-emoji').textContent = '🏆';
         else if (score >= 80) document.getElementById('result-emoji').textContent = '🎉';
         else if (score >= 60) document.getElementById('result-emoji').textContent = '😊';
         else document.getElementById('result-emoji').textContent = '💪';
         
-        // Ẩn/Hiện nút quay thưởng
         if (unlockedWheel) {
             if(unlockMsg) unlockMsg.classList.remove('hidden');
             if(spinBtn) spinBtn.classList.remove('hidden');
-            createConfetti(); // Bắn pháo giấy chúc mừng
+            createConfetti();
         } else {
             if(unlockMsg) unlockMsg.classList.add('hidden');
             if(spinBtn) spinBtn.classList.add('hidden');
         }
         
-        // Lưu dữ liệu
+        // Lưu dữ liệu cuối cùng
         if (participantData) {
             participantData.score = score;
             participantData.unlocked_wheel = unlockedWheel;
             participantData.rank = rankInfo.label;
+            participantData.ai_advice = rankInfo.course_recommend;
             
-            // Tạo chuỗi tóm tắt kỹ năng gửi về Google Sheet (bao gồm cả Writing)
             let skillReport = [];
             for (const [cat, data] of Object.entries(skillMetrics)) {
                  skillReport.push(`${cat}: ${Math.round(data.current)}/${Math.round(data.total)}`);
@@ -748,13 +793,7 @@ async function checkWritingAnswerAndNext() {
 
             showLoading(true);
             try {
-                // Gửi dữ liệu về Google Sheet
                 await sendDataToGoogleSheet(participantData);
-                
-                // Nếu có SDK bên ngoài (tùy chọn)
-                if (window.dataSdk) {
-                    await window.dataSdk.create(participantData);
-                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -762,18 +801,15 @@ async function checkWritingAnswerAndNext() {
             }
         }
         
-        // Chuyển màn hình sang trang kết quả
         showScreen('results');
     }
-    // ============================================================
-    // --- LUCKY WHEEL & CONFETTI ---
-    // ============================================================
+
+    // Wheel functions
     let wheelCanvas, wheelCtx, wheelRotation = 0, isSpinning = false;
 
     function initWheel() {
         wheelCanvas = document.getElementById('wheel-canvas');
         if (!wheelCanvas) return;
-        
         wheelCtx = wheelCanvas.getContext('2d');
         const size = wheelCanvas.offsetWidth;
         wheelCanvas.width = size;
@@ -801,8 +837,6 @@ async function checkWritingAnswerAndNext() {
             wheelCtx.closePath();
             wheelCtx.fillStyle = prize.color;
             wheelCtx.fill();
-            wheelCtx.strokeStyle = '#fff';
-            wheelCtx.lineWidth = 3;
             wheelCtx.stroke();
             
             wheelCtx.save();
@@ -810,18 +844,10 @@ async function checkWritingAnswerAndNext() {
             wheelCtx.rotate(startAngle + segmentAngle / 2);
             wheelCtx.textAlign = 'center';
             wheelCtx.fillStyle = '#fff';
-            wheelCtx.font = 'bold 14px Poppins';
-            wheelCtx.fillText(prize.emoji, radius * 0.7, 5);
+            wheelCtx.font = 'bold 12px Poppins';
+            wheelCtx.fillText(prize.emoji, radius * 0.75, 5);
             wheelCtx.restore();
         });
-        
-        wheelCtx.beginPath();
-        wheelCtx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
-        wheelCtx.fillStyle = '#fff';
-        wheelCtx.fill();
-        wheelCtx.strokeStyle = '#3b82f6';
-        wheelCtx.lineWidth = 5;
-        wheelCtx.stroke();
     }
 
     async function spinWheel() {
@@ -850,24 +876,18 @@ async function checkWritingAnswerAndNext() {
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                wheelRotation = wheelRotation % (2 * Math.PI);
+                isSpinning = false;
                 const segmentAngle = (2 * Math.PI) / prizes.length;
-                const normalizedRotation = (2 * Math.PI - wheelRotation) % (2 * Math.PI);
+                const normalizedRotation = (2 * Math.PI - wheelRotation % (2 * Math.PI)) % (2 * Math.PI);
                 const prizeIndex = Math.floor(normalizedRotation / segmentAngle);
                 const wonPrize = prizes[prizeIndex];
                 
                 showPrize(wonPrize);
                 createConfetti();
-                isSpinning = false;
-                spinBtn.disabled = true;
-                document.getElementById('spin-btn-text').textContent = 'Đã quay ✅';
                 
                 if (participantData) {
-                    showLoading(true);
                     participantData.prize_won = wonPrize.name;
-                    sendDataToGoogleSheet(participantData).then(() => {
-                        showLoading(false);
-                    });
+                    sendDataToGoogleSheet(participantData);
                 }
             }
         }
@@ -876,29 +896,25 @@ async function checkWritingAnswerAndNext() {
 
     function showPrize(prize) {
         const prizeDisplay = document.getElementById('prize-display');
-        document.getElementById('prize-text').textContent = `You won: ${prize.emoji} ${prize.name}`;
+        document.getElementById('prize-text').textContent = `Bạn nhận được: ${prize.emoji} ${prize.name}`;
         prizeDisplay.classList.remove('hidden');
     }
- 
 
     function createConfetti() {
         const container = document.getElementById('confetti-container');
         if(!container) return;
-        const colors = ['#FF6B6B', '#4ECDC4', '#FFD93D', '#95E1D3', '#F38181', '#AA96DA'];
-        
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f'];
         for (let i = 0; i < 50; i++) {
-            const confetti = document.createElement('div');
-            confetti.style.position = 'absolute';
-            confetti.style.left = Math.random() * 100 + '%';
-            confetti.style.top = '-10px';
-            confetti.style.width = '10px';
-            confetti.style.height = '10px';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.borderRadius = '2px';
-            confetti.style.animation = `confetti-fall ${1.5 + Math.random() * 2}s linear forwards`;
-            confetti.style.animationDelay = Math.random() * 0.5 + 's';
-            container.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 4000);
+            const el = document.createElement('div');
+            el.style.position = 'absolute';
+            el.style.left = Math.random() * 100 + '%';
+            el.style.top = '-10px';
+            el.style.width = '10px';
+            el.style.height = '10px';
+            el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            el.style.animation = `confetti-fall ${1 + Math.random() * 2}s linear forwards`;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
         }
     }
 
@@ -906,27 +922,12 @@ async function checkWritingAnswerAndNext() {
     async function onConfigChange(cfg) {
         config = { ...defaultConfig, ...cfg };
         const titleEl = document.getElementById('quiz-title-display');
-        if (titleEl) titleEl.textContent = config.quiz_title || defaultConfig.quiz_title;
-        document.body.style.fontFamily = `${config.font_family || defaultConfig.font_family}, sans-serif`;
-    }
-
-    function mapToCapabilities(cfg) {
-        return {
-            recolorables: [],
-            borderables: [],
-            fontEditable: {
-                get: () => cfg.font_family || defaultConfig.font_family,
-                set: (value) => { cfg.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
-            }
-        };
-    }
-
-    function mapToEditPanelValues(cfg) {
-        return new Map([['quiz_title', cfg.quiz_title || defaultConfig.quiz_title]]);
+        if (titleEl) titleEl.textContent = config.quiz_title;
+        document.body.style.fontFamily = config.font_family;
     }
 
     if (window.elementSdk) {
-        window.elementSdk.init({ defaultConfig, onConfigChange, mapToCapabilities, mapToEditPanelValues });
+        window.elementSdk.init({ defaultConfig, onConfigChange });
     }
 
     initDataSDK();

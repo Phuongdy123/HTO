@@ -528,77 +528,7 @@
     </div>
             <script src="../models/DataModel.js"></script>
             <script src="../controllers/QuizController.js"></script>
-<script>
-    // [QUAN TRỌNG] Đổi link gửi về API Proxy của Vercel
-    const BIZFLY_WEBHOOK_URL = "/miniappeglish/api/webhook.js";
-    
-    // Biến lưu tạm thông tin khách hàng
-    let customerProfile = {
-        fullname: '',
-        school: '',
-        phone: '',
-        email: ''
-    };
 
-    // 1. Lắng nghe sự kiện điền form
-    const infoForm = document.getElementById('info-form');
-    if(infoForm) {
-        infoForm.addEventListener('submit', function(e) {
-            // Không preventDefault để logic chuyển trang của QuizController vẫn chạy
-            customerProfile.fullname = document.getElementById('full-name').value;
-            customerProfile.school = document.getElementById('school-name').value;
-            customerProfile.phone = document.getElementById('phone-number').value;
-            customerProfile.email = document.getElementById('user-email').value;
-        });
-    }
-
-    // 2. Hàm gửi dữ liệu (Gọi khi có kết quả thi)
-    window.sendToBizfly = async function(score, langCode) {
-        // Xử lý tên ngôn ngữ
-        const langMap = { 'en': 'Tiếng Anh', 'zh': 'Tiếng Trung', 'kr': 'Tiếng Hàn', 'jp': 'Tiếng Nhật', 'de': 'Tiếng Đức' };
-        const languageName = langMap[langCode] || langCode;
-
-        // Lấy thời gian hiện tại
-        const now = new Date();
-        const timeString = now.toLocaleString('vi-VN', { hour12: false });
-
-        // Đóng gói dữ liệu
-        const data = {
-            "fullname": customerProfile.fullname,
-            "phone": customerProfile.phone,
-            "email": customerProfile.email,
-            "school_name": customerProfile.school,
-            
-            "qr_code": window.location.href, // Link trang web
-            "value": "Vercel Web App",       // Nguồn
-            "thoi_gian": timeString,
-            "ghi_chu": `Điểm: ${score}/100 - Môn: ${languageName}`,
-            
-            "score": score
-        };
-
-        console.log("🚀 Đang gửi dữ liệu qua Proxy Vercel...", data);
-
-        try {
-            const response = await fetch(BIZFLY_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                console.log("✅ Gửi thành công! Dữ liệu đã vào CRM.");
-            } else {
-                const errText = await response.text();
-                console.error("❌ Lỗi gửi:", response.status, errText);
-            }
-        } catch (error) {
-            console.error("❌ Lỗi kết nối:", error);
-        }
-    }
-</script>>
             
         </body>
 </html>

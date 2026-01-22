@@ -658,74 +658,97 @@ function renderQuestion() {
         document.getElementById('next-btn-icon').textContent = '➡️';
     }
 
-    async function showResults() {
-        score = Math.round(score); 
-        if (score > 100) score = 100;
+   async function showResults() {
+    // 1. Xử lý điểm số cơ bản
+    score = Math.round(score); 
+    if (score > 100) score = 100;
 
-        const percentage = Math.round((correctCount / questions.length) * 100);
-        const unlockedWheel = score >= 50; 
-        
-        // --- LOGIC PHÂN TÍCH AI (QUY ĐỔI ĐIỂM) ---
-        const currentLang = participantData.language || 'en';
-        const rankInfo = getStudentRank(score, currentLang);
+    const percentage = Math.round((correctCount / questions.length) * 100);
+    const unlockedWheel = score >= 50; 
+    
+    // 2. Logic Phân Tích AI (Dựa trên điểm số và ngôn ngữ)
+    // Lưu ý: Đảm bảo bạn đã có hàm getStudentRank() định nghĩa ở bên ngoài
+    const currentLang = (participantData && participantData.language) ? participantData.language : 'en';
+    
+    // Nếu chưa có hàm getStudentRank, hệ thống sẽ dùng giá trị mặc định này để không bị lỗi
+    let rankInfo = { label: 'Triển vọng', message: 'Bạn đã hoàn thành bài thi.', course_recommend: 'Khóa Giao tiếp Cơ bản' };
+    if (typeof getStudentRank === 'function') {
+        rankInfo = getStudentRank(score, currentLang);
+    }
 
-        document.getElementById('final-score').textContent = score;
-        document.getElementById('correct-answers').textContent = correctCount;
-        document.getElementById('percentage').textContent = `${percentage}%`;
+    // 3. Hiển thị thông số lên màn hình kết quả
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('correct-answers').textContent = correctCount;
+    document.getElementById('percentage').textContent = `${percentage}%`;
 
-        // Render AI Report Card
-        const aiReportHTML = `
-            <div class="mb-6 animate-fade-in-up">
-                <div class="relative p-5 text-left border border-blue-200 bg-blue-50/80 rounded-2xl shadow-sm">
-                    <div class="absolute -top-3 -right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
-                        <span>🤖</span> AI ANALYSIS
+    // -----------------------------------------------------------
+    // 🔥 TÍCH HỢP BIZFLY WEBHOOK TẠI ĐÂY
+    // -----------------------------------------------------------
+    if (window.sendToBizfly) {
+        console.log("Đang gửi dữ liệu sang Bizfly...");
+        // Gửi điểm + Ngôn ngữ thi sang CRM
+        window.sendToBizfly(score, currentLang);
+    }
+    // -----------------------------------------------------------
+
+    // 4. Render AI Report Card (Thẻ báo cáo AI)
+    const aiReportHTML = `
+        <div class="mb-6 animate-fade-in-up">
+            <div class="relative p-5 text-left border border-blue-200 bg-blue-50/80 rounded-2xl shadow-sm">
+                <div class="absolute -top-3 -right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1">
+                    <span>🤖</span> AI ANALYSIS
+                </div>
+                
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-md text-3xl">
+                        ${score >= 80 ? '🥇' : (score >= 50 ? '🥈' : '🥉')}
                     </div>
-                    
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-md text-3xl">
-                            ${score >= 80 ? '🥇' : (score >= 50 ? '🥈' : '🥉')}
-                        </div>
-                        <div>
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Trình độ tương đương</div>
-                            <div class="text-xl font-black text-blue-800">${rankInfo.label}</div>
-                        </div>
+                    <div>
+                        <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Trình độ tương đương</div>
+                        <div class="text-xl font-black text-blue-800">${rankInfo.label}</div>
                     </div>
+                </div>
 
-                    <div class="mb-4 text-sm leading-relaxed text-gray-700 bg-white p-4 rounded-xl border border-blue-100 shadow-inner">
-                        ${rankInfo.message}
-                    </div>
+                <div class="mb-4 text-sm leading-relaxed text-gray-700 bg-white p-4 rounded-xl border border-blue-100 shadow-inner">
+                    ${rankInfo.message}
+                </div>
 
-                    <div class="pt-3 mt-3 border-t border-blue-200/50">
-                        <div class="mb-1 text-xs font-bold text-gray-500 uppercase tracking-wide">Khóa học đề xuất tại Hallo Saigon:</div>
-                        <div class="flex items-center justify-between p-3 text-white shadow-md bg-gradient-to-r from-orange-500 to-red-500 rounded-xl transform transition-transform hover:scale-[1.02]">
-                            <div class="font-bold text-sm flex items-center gap-2">
-                                <span>🔥</span> ${rankInfo.course_recommend}
-                            </div>
-                            <div class="text-xl">➔</div>
+                <div class="pt-3 mt-3 border-t border-blue-200/50">
+                    <div class="mb-1 text-xs font-bold text-gray-500 uppercase tracking-wide">Khóa học đề xuất tại Hallo Saigon:</div>
+                    <div class="flex items-center justify-between p-3 text-white shadow-md bg-gradient-to-r from-orange-500 to-red-500 rounded-xl transform transition-transform hover:scale-[1.02]">
+                        <div class="font-bold text-sm flex items-center gap-2">
+                            <span>🔥</span> ${rankInfo.course_recommend}
                         </div>
+                        <div class="text-xl">➔</div>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        let reportContainer = document.getElementById('ai-report-container');
-        if (!reportContainer) {
-            reportContainer = document.createElement('div');
-            reportContainer.id = 'ai-report-container';
-            const scoreBlock = document.querySelector('#screen-results .bg-gradient-to-br'); 
-            if(scoreBlock) scoreBlock.insertAdjacentElement('afterend', reportContainer);
-        }
-        reportContainer.innerHTML = aiReportHTML;
+    // Chèn AI Report vào giao diện
+    let reportContainer = document.getElementById('ai-report-container');
+    if (!reportContainer) {
+        reportContainer = document.createElement('div');
+        reportContainer.id = 'ai-report-container';
+        // Tìm vị trí chèn: Sau khối điểm số
+        const scoreBlock = document.querySelector('#screen-results .bg-gradient-to-br'); 
+        if(scoreBlock) scoreBlock.insertAdjacentElement('afterend', reportContainer);
+    }
+    reportContainer.innerHTML = aiReportHTML;
 
-        // Render Skill Bars
+    // 5. Render Skill Bars (Biểu đồ kỹ năng)
+    // Lưu ý: Đảm bảo biến skillMetrics đã được tính toán trong quá trình làm bài
+    if (typeof skillMetrics !== 'undefined') {
         let skillsHTML = '<div class="space-y-4 mb-6 w-full p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">';
         for (const [cat, data] of Object.entries(skillMetrics)) {
             if (data.total > 0) {
                 const percent = Math.round((data.current / data.total) * 100);
-                const displayCurrent = Math.round(data.current);
                 const displayTotal = Math.round(data.total);
+                const displayCurrent = Math.round(data.current);
 
                 let displayCat = cat;
+                // Mapping tên kỹ năng sang tiếng Việt
                 if(cat === 'LISTENING') displayCat = '🎧 Nghe Hiểu (Listening)';
                 else if(cat === 'READING') displayCat = '📖 Đọc Hiểu (Reading)';
                 else if(cat === 'GRAMMAR') displayCat = '✍️ Ngữ Pháp (Grammar)';
@@ -749,6 +772,7 @@ function renderQuestion() {
         }
         skillsHTML += '</div>';
 
+        // Chèn Skill Bars vào giao diện
         const resultCard = document.querySelector('#screen-results .card-3d');
         let skillsContainer = document.getElementById('skills-breakdown');
         if (!skillsContainer) {
@@ -762,52 +786,62 @@ function renderQuestion() {
             }
         }
         skillsContainer.innerHTML = skillsHTML;
+    }
 
-        // Logic Wheel
-        const unlockMsg = document.getElementById('unlock-message');
-        const spinBtn = document.getElementById('spin-wheel-btn');
+    // 6. Logic Vòng Quay May Mắn (Lucky Wheel)
+    const unlockMsg = document.getElementById('unlock-message');
+    const spinBtn = document.getElementById('spin-wheel-btn');
+    const resultEmoji = document.getElementById('result-emoji');
 
-        if (score === 100) document.getElementById('result-emoji').textContent = '🏆';
-        else if (score >= 80) document.getElementById('result-emoji').textContent = '🎉';
-        else if (score >= 60) document.getElementById('result-emoji').textContent = '😊';
-        else document.getElementById('result-emoji').textContent = '💪';
+    if (resultEmoji) {
+        if (score === 100) resultEmoji.textContent = '🏆';
+        else if (score >= 80) resultEmoji.textContent = '🎉';
+        else if (score >= 60) resultEmoji.textContent = '😊';
+        else resultEmoji.textContent = '💪';
+    }
+    
+    if (unlockedWheel) {
+        if(unlockMsg) unlockMsg.classList.remove('hidden');
+        if(spinBtn) spinBtn.classList.remove('hidden');
+        if (typeof createConfetti === 'function') createConfetti();
+    } else {
+        if(unlockMsg) unlockMsg.classList.add('hidden');
+        if(spinBtn) spinBtn.classList.add('hidden');
+    }
+    
+    // 7. Lưu dữ liệu Session & Gửi Google Sheet (nếu có)
+    if (participantData) {
+        participantData.score = score;
+        participantData.unlocked_wheel = unlockedWheel;
+        participantData.rank = rankInfo.label;
+        participantData.ai_advice = rankInfo.course_recommend;
         
-        if (unlockedWheel) {
-            if(unlockMsg) unlockMsg.classList.remove('hidden');
-            if(spinBtn) spinBtn.classList.remove('hidden');
-            createConfetti();
-        } else {
-            if(unlockMsg) unlockMsg.classList.add('hidden');
-            if(spinBtn) spinBtn.classList.add('hidden');
-        }
-        
-        // Lưu dữ liệu cuối cùng
-        if (participantData) {
-            participantData.score = score;
-            participantData.unlocked_wheel = unlockedWheel;
-            participantData.rank = rankInfo.label;
-            participantData.ai_advice = rankInfo.course_recommend;
-            
+        if (typeof skillMetrics !== 'undefined') {
             let skillReport = [];
             for (const [cat, data] of Object.entries(skillMetrics)) {
                  skillReport.push(`${cat}: ${Math.round(data.current)}/${Math.round(data.total)}`);
             }
             participantData.skill_breakdown = skillReport.join(' | ');
+        }
 
-            saveSession(participantData); 
+        saveSession(participantData); 
 
+        // Gửi Google Sheet (giữ nguyên logic cũ của bạn nếu cần)
+        if (typeof sendDataToGoogleSheet === 'function') {
             showLoading(true);
             try {
                 await sendDataToGoogleSheet(participantData);
             } catch (err) {
-                console.error(err);
+                console.error("Lỗi gửi Google Sheet:", err);
             } finally {
                 showLoading(false);
             }
         }
-        
-        showScreen('results');
     }
+    
+    // 8. Hiển thị màn hình kết quả
+    showScreen('results');
+}
 
     // Wheel functions
     let wheelCanvas, wheelCtx, wheelRotation = 0, isSpinning = false;

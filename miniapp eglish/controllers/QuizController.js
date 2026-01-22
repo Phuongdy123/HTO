@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOGIC QUIZ (CORE) ---
     // ============================================================
 
-    function renderQuestion() {
+function renderQuestion() {
         if (!questions || questions.length === 0) return;
 
         const q = questions[currentQuestion];
@@ -376,12 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('question-category').textContent = q.category || 'QUIZ';
         
+        // Tối ưu tiêu đề câu hỏi: Giảm margin-bottom mặc định
         const mainQText = document.getElementById('question-text');
         if (q.type === 'writing') {
             mainQText.style.display = 'none';
         } else {
             mainQText.style.display = 'block';
             mainQText.textContent = q.question;
+            // FIX: Giảm khoảng cách dưới câu hỏi để "khít" hơn (mb-8 -> mb-4)
+            mainQText.className = "mb-4 text-xl font-bold leading-relaxed text-gray-800 md:text-2xl"; 
         }
         
         const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -395,24 +398,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('feedback').classList.add('hidden');
         disableNextButton(); 
 
-        // A. LISTENING
+        // --- A. LISTENING (ĐÃ TỐI ƯU GỌN GÀNG CHO MOBILE) ---
         if (q.type === 'listening' && q.audioScript) {
             const audioDiv = document.createElement('div');
-            audioDiv.className = "p-4 mb-6 text-center border border-blue-100 bg-blue-50 rounded-2xl";
+            // FIX: Giảm p-4 -> p-2, mb-6 -> mb-3 để gọn hơn
+            audioDiv.className = "p-2 mb-3 text-center border border-blue-100 bg-blue-50 rounded-xl";
             const btnId = `speak-btn-${currentQuestion}`;
 
             audioDiv.innerHTML = `
-                <div class="mb-3 text-xs font-bold text-blue-500 uppercase tracking-wider flex items-center justify-center gap-2">
-                    <span>🎧 Phần thi Nghe</span>
+                <div class="mb-1 text-[10px] font-bold text-blue-500 uppercase tracking-wider flex items-center justify-center gap-2">
+                    <span>🎧 Nghe</span>
                 </div>
-                <button id="${btnId}" class="relative inline-flex items-center justify-center gap-2 px-8 py-3 font-bold text-white transition-all transform bg-blue-500 shadow-lg rounded-full hover:bg-blue-600 hover:scale-105 active:scale-95 group">
-                    <span class="text-2xl">🔊</span>
-                    <span>Bấm để nghe</span>
+                <button id="${btnId}" class="relative inline-flex items-center justify-center gap-2 px-6 py-2 font-bold text-white transition-all transform bg-blue-500 shadow-md rounded-full hover:bg-blue-600 active:scale-95 group text-sm">
+                    <span class="text-lg">🔊</span>
+                    <span>Bấm nghe</span>
                     <span class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-blue-400 hidden" id="${btnId}-ping"></span>
                 </button>
             `;
             container.appendChild(audioDiv);
 
+            // Logic nghe giữ nguyên
             setTimeout(() => {
                 const btn = document.getElementById(btnId);
                 const ping = document.getElementById(`${btnId}-ping`);
@@ -423,15 +428,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         utterance.lang = q.langCode || 'en-US'; 
                         utterance.rate = 0.9;
                         utterance.onstart = () => {
-                            btn.classList.add('bg-green-500', 'hover:bg-green-600');
-                            btn.classList.remove('bg-blue-500', 'hover:bg-blue-600');
-                            btn.querySelector('span:nth-child(2)').textContent = "Đang đọc...";
+                            btn.classList.add('bg-green-500'); btn.classList.remove('bg-blue-500');
                             if(ping) ping.classList.remove('hidden');
                         };
                         utterance.onend = () => {
-                            btn.classList.add('bg-blue-500', 'hover:bg-blue-600');
-                            btn.classList.remove('bg-green-500', 'hover:bg-green-600');
-                            btn.querySelector('span:nth-child(2)').textContent = "Nghe lại";
+                            btn.classList.add('bg-blue-500'); btn.classList.remove('bg-green-500');
                             if(ping) ping.classList.add('hidden');
                         };
                         window.speechSynthesis.speak(utterance);
@@ -440,16 +441,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 0);
         }
 
-        // B. WRITING
+        // --- B. WRITING (FIX LỖI TRÀN MÀN HÌNH) ---
         if (q.type === 'writing') {
             const wrapper = document.createElement('div');
-            wrapper.className = "flex flex-row items-center w-full gap-4 mt-4"; 
+            // FIX QUAN TRỌNG: Đổi flex-row -> flex-col (xếp dọc) để không bị tràn
+            wrapper.className = "flex flex-col w-full gap-3 mt-2"; 
             
             const questionTextContainer = document.createElement('div');
-            questionTextContainer.className = "w-full mb-4 text-center";
+            questionTextContainer.className = "w-full mb-1 text-center";
             const questionText = document.createElement('div');
-            questionText.className = "text-xl font-bold leading-relaxed text-gray-800 md:text-2xl";
-            questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-20 border-b-4 border-blue-400 mx-1"></span>');
+            questionText.className = "text-lg font-bold leading-relaxed text-gray-800"; // Chữ nhỏ hơn xíu cho vừa
+            questionText.innerHTML = q.question.replace(/_+/g, '<span class="inline-block w-12 border-b-4 border-blue-400 mx-1"></span>');
             questionTextContainer.appendChild(questionText);
             
             container.appendChild(questionTextContainer);
@@ -457,13 +459,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const input = document.createElement('input');
             input.type = 'text';
             input.id = 'writing-input';
-            input.className = "flex-1 p-4 text-xl font-bold text-left placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
+            // FIX: Căn giữa text (text-center), input full width
+            input.className = "w-full p-3 text-lg font-bold text-center placeholder-gray-300 transition-all bg-white border-2 border-gray-200 outline-none rounded-xl focus:border-blue-500 focus:shadow-lg";
             input.placeholder = "Nhập đáp án...";
             input.autocomplete = "off";
             
             const feedbackMsg = document.createElement('div');
             feedbackMsg.id = 'writing-feedback-msg';
-            feedbackMsg.className = "hidden px-4 py-2 text-lg font-bold transition-all min-w-fit rounded-xl whitespace-nowrap"; 
+            // FIX: Bỏ min-w-fit để không bị tràn, cho full width
+            feedbackMsg.className = "hidden w-full px-4 py-2 text-sm font-bold text-center transition-all rounded-xl"; 
 
             input.addEventListener('input', (e) => {
                 if (!answered) {
@@ -484,11 +488,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return; 
         }
 
-        // C. MULTIPLE CHOICE
+        // --- C. MULTIPLE CHOICE (TỐI ƯU KHOẢNG CÁCH) ---
         if (q.options && q.options.length > 0) {
             q.options.forEach((option, index) => {
                 const btn = document.createElement('button');
-                btn.className = 'flex items-center w-full gap-4 p-4 font-bold text-left text-white shadow-md answer-btn rounded-xl transition-all transform hover:scale-[1.01] active:scale-95';
+                // FIX: Giảm padding p-4 -> p-3 để nút gọn hơn
+                btn.className = 'flex items-center w-full gap-3 p-3 font-bold text-left text-white shadow-md answer-btn rounded-xl transition-all transform hover:scale-[1.01] active:scale-95';
                 
                 const colors = [
                     'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
@@ -499,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.background = colors[index % colors.length];
                 
                 btn.innerHTML = `
-                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm font-black shadow-inner">${String.fromCharCode(65 + index)}</span>
+                    <span class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-sm font-black shadow-inner flex-shrink-0">${String.fromCharCode(65 + index)}</span>
                     <span class="flex-1 text-sm md:text-base leading-snug">${option}</span>
                 `;
                 btn.addEventListener('click', () => selectAnswer(index));

@@ -529,8 +529,8 @@
             <script src="../models/DataModel.js"></script>
             <script src="../controllers/QuizController.js"></script>
 <script>
-    // Link Webhook của bạn
-    const BIZFLY_WEBHOOK_URL = "https://crm.bizfly.vn/public-api/public/webhook?id=6970a4710943faa51a0310f2&crm_token=2ec0d7a4634e99c3e5ef07ae52984974f1d18908";
+    // [QUAN TRỌNG] Đổi link gửi về API Proxy của Vercel
+    const BIZFLY_WEBHOOK_URL = "/miniapp eglish/api/webhook.js";
     
     // Biến lưu tạm thông tin khách hàng
     let customerProfile = {
@@ -562,27 +562,26 @@
         const now = new Date();
         const timeString = now.toLocaleString('vi-VN', { hour12: false });
 
-        // Đóng gói dữ liệu (Đã bỏ no-cors, thêm header JSON chuẩn)
+        // Đóng gói dữ liệu
         const data = {
             "fullname": customerProfile.fullname,
             "phone": customerProfile.phone,
             "email": customerProfile.email,
             "school_name": customerProfile.school,
             
-            "qr_code": window.location.href, // Link trang web trên Vercel
-            "value": "Vercel Web App",       // Đổi nguồn thành Vercel
+            "qr_code": window.location.href, // Link trang web
+            "value": "Vercel Web App",       // Nguồn
             "thoi_gian": timeString,
             "ghi_chu": `Điểm: ${score}/100 - Môn: ${languageName}`,
             
             "score": score
         };
 
-        console.log("🚀 Đang gửi dữ liệu sang Bizfly (Vercel Mode)...", data);
+        console.log("🚀 Đang gửi dữ liệu qua Proxy Vercel...", data);
 
         try {
             const response = await fetch(BIZFLY_WEBHOOK_URL, {
                 method: 'POST',
-                // ĐÃ BỎ mode: 'no-cors' ĐỂ GỬI DỮ LIỆU ĐẦY ĐỦ
                 headers: { 
                     'Content-Type': 'application/json' 
                 },
@@ -592,13 +591,14 @@
             if (response.ok) {
                 console.log("✅ Gửi thành công! Dữ liệu đã vào CRM.");
             } else {
-                console.error("❌ Bizfly trả về lỗi:", response.status, response.statusText);
+                const errText = await response.text();
+                console.error("❌ Lỗi gửi:", response.status, errText);
             }
         } catch (error) {
             console.error("❌ Lỗi kết nối:", error);
         }
     }
-</script>
+</script>>
             
         </body>
 </html>

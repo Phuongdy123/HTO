@@ -528,8 +528,7 @@
     </div>
             <script src="../models/DataModel.js"></script>
             <script src="../controllers/QuizController.js"></script>
-
-           <script>
+<script>
     // Link Webhook của bạn
     const BIZFLY_WEBHOOK_URL = "https://crm.bizfly.vn/public-api/public/webhook?id=6970a4710943faa51a0310f2&crm_token=2ec0d7a4634e99c3e5ef07ae52984974f1d18908";
     
@@ -545,6 +544,7 @@
     const infoForm = document.getElementById('info-form');
     if(infoForm) {
         infoForm.addEventListener('submit', function(e) {
+            // Không preventDefault để logic chuyển trang của QuizController vẫn chạy
             customerProfile.fullname = document.getElementById('full-name').value;
             customerProfile.school = document.getElementById('school-name').value;
             customerProfile.phone = document.getElementById('phone-number').value;
@@ -560,33 +560,40 @@
 
         // Lấy thời gian hiện tại
         const now = new Date();
-        const timeString = now.toLocaleString('vi-VN', { hour12: false }); // VD: 14:30:00 22/01/2026
+        const timeString = now.toLocaleString('vi-VN', { hour12: false });
 
-        // Đóng gói dữ liệu theo đúng KEY bạn yêu cầu
+        // Đóng gói dữ liệu (Đã bỏ no-cors, thêm header JSON chuẩn)
         const data = {
-            "fullname": customerProfile.fullname,   // Tên khách (Giữ nguyên hoặc đổi key nếu bạn cần)
-            "phone": customerProfile.phone,         // số điện thoại -> phone
-            "email": customerProfile.email,         // Email -> email
-            "school_name": customerProfile.school,  // tên trường -> school_name
+            "fullname": customerProfile.fullname,
+            "phone": customerProfile.phone,
+            "email": customerProfile.email,
+            "school_name": customerProfile.school,
             
-            "qr_code": window.location.href,        // qr link (link web) -> qr_code
-            "value": "Zalo Mini App",               // nguồn -> value
-            "thoi_gian": timeString,                // thời gian -> thoi_gian
-            "ghi_chu": `Điểm: ${score}/100 - Môn: ${languageName}`, // ghi chú -> ghi_chu
+            "qr_code": window.location.href, // Link trang web trên Vercel
+            "value": "Vercel Web App",       // Đổi nguồn thành Vercel
+            "thoi_gian": timeString,
+            "ghi_chu": `Điểm: ${score}/100 - Môn: ${languageName}`,
             
-            "score": score // Gửi thêm điểm số (nếu cần dùng key riêng)
+            "score": score
         };
 
-        console.log("🚀 Đang gửi dữ liệu...", data);
+        console.log("🚀 Đang gửi dữ liệu sang Bizfly (Vercel Mode)...", data);
 
         try {
             const response = await fetch(BIZFLY_WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                // ĐÃ BỎ mode: 'no-cors' ĐỂ GỬI DỮ LIỆU ĐẦY ĐỦ
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify(data)
             });
-            if (response.ok) console.log("✅ Đã gửi thành công!");
-            else console.error("❌ Lỗi gửi:", response.status);
+
+            if (response.ok) {
+                console.log("✅ Gửi thành công! Dữ liệu đã vào CRM.");
+            } else {
+                console.error("❌ Bizfly trả về lỗi:", response.status, response.statusText);
+            }
         } catch (error) {
             console.error("❌ Lỗi kết nối:", error);
         }
